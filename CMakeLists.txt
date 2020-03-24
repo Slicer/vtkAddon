@@ -4,7 +4,11 @@ project(vtkAddon)
 cmake_minimum_required(VERSION 3.13.4)
 #-----------------------------------------------------------------------------
 
+set(vtkAddon_CMAKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
+set(CMAKE_MODULE_PATH ${vtkAddon_CMAKE_DIR} ${CMAKE_MODULE_PATH})
+
 include(CMakeDependentOption)
+include(vtkAddonFunctionAddExecutable)
 
 # --------------------------------------------------------------------------
 # Dependencies
@@ -26,6 +30,10 @@ endif()
 
 if(NOT DEFINED BUILD_TESTING)
   option(BUILD_TESTING "Test the project" OFF)
+endif()
+
+if(NOT DEFINED vtkAddon_USE_UTF8)
+  option(vtkAddon_USE_UTF8 "Make applications use UTF-8 as code page." OFF)
 endif()
 
 if(NOT DEFINED vtkAddon_WRAP_PYTHON)
