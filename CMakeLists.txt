@@ -24,6 +24,10 @@ if(NOT DEFINED BUILD_SHARED_LIBS)
   option(BUILD_SHARED_LIBS "Build with shared libraries." ON)
 endif()
 
+if(NOT DEFINED BUILD_TESTING)
+  option(BUILD_TESTING "Test the project" OFF)
+endif()
+
 if(NOT DEFINED vtkAddon_WRAP_PYTHON)
   cmake_dependent_option(vtkAddon_WRAP_PYTHON "Build python wrapping" OFF "VTK_WRAP_PYTHON" OFF)
 endif()
@@ -188,9 +192,10 @@ if(vtkAddon_WRAP_PYTHON)
 endif()
 
 # --------------------------------------------------------------------------
-# Testing (requires some of the examples)
+# Testing
 # --------------------------------------------------------------------------
 if(BUILD_TESTING)
+  include(CTest)
   add_subdirectory(Testing)
 endif()
 
