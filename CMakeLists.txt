@@ -4,12 +4,7 @@ project(vtkAddon)
 cmake_minimum_required(VERSION 3.13.4)
 #-----------------------------------------------------------------------------
 
-# --------------------------------------------------------------------------
-# Options
-# --------------------------------------------------------------------------
-if(NOT DEFINED BUILD_SHARED_LIBS)
-  option(BUILD_SHARED_LIBS "Build with shared libraries." ON)
-endif()
+include(CMakeDependentOption)
 
 # --------------------------------------------------------------------------
 # Dependencies
@@ -22,6 +17,16 @@ find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
 set(vtkAddon_LIBS ${VTK_LIBRARIES})
 
+# --------------------------------------------------------------------------
+# Options
+# --------------------------------------------------------------------------
+if(NOT DEFINED BUILD_SHARED_LIBS)
+  option(BUILD_SHARED_LIBS "Build with shared libraries." ON)
+endif()
+
+if(NOT DEFINED vtkAddon_WRAP_PYTHON)
+  cmake_dependent_option(vtkAddon_WRAP_PYTHON "Build python wrapping" OFF "VTK_WRAP_PYTHON" OFF)
+endif()
 
 # --------------------------------------------------------------------------
 # Configure headers
@@ -76,7 +81,7 @@ set(vtkAddon_SRCS
   vtkRawRGBVolumeCodec.h
 )
 
-if(Slicer_VTK_RENDERING_USE_OpenGL2_BACKEND)
+if(VTK_RENDERING_BACKEND STREQUAL "OpenGL2")
   set(vtkAddon_SRCS
     ${vtkAddon_SRCS}
     vtkOpenGLTextureImage.cxx
@@ -124,11 +129,6 @@ add_library(${lib_name} ${srcs})
 
 target_link_libraries(${lib_name} ${vtkAddon_LIBS})
 
-# Apply user-defined properties to the library target.
-if(Slicer_LIBRARY_PROPERTIES)
-  set_target_properties(${lib_name} PROPERTIES ${Slicer_LIBRARY_PROPERTIES})
-endif()
-
 # --------------------------------------------------------------------------
 # Folder
 # --------------------------------------------------------------------------
@@ -166,7 +166,7 @@ install(TARGETS ${lib_name}
 # --------------------------------------------------------------------------
 # Python Wrapping
 # --------------------------------------------------------------------------
-if(VTK_WRAP_PYTHON)
+if(vtkAddon_WRAP_PYTHON)
   include(vtkMacroKitPythonWrap)
 
   vtkMacroKitPythonWrap(
