@@ -2,7 +2,7 @@
 
 ## Overview
 
-VTK C++ functions and filters for medical imaging applications.
+This module contains general-purpose features that may be integrated into VTK library in the future.
 
 ## Contact
 
