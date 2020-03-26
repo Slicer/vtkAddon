@@ -154,6 +154,8 @@ endif()
 # --------------------------------------------------------------------------
 # Export target
 # --------------------------------------------------------------------------
+
+# Export targets for a build tree
 if(NOT DEFINED ${PROJECT_NAME}_EXPORT_FILE)
   set(${PROJECT_NAME}_EXPORT_FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake)
 endif()
@@ -216,6 +218,8 @@ set(${PROJECT_NAME}_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BIN
 # --------------------------------------------------------------------------
 # Configure support file
 # --------------------------------------------------------------------------
+
+# Configure 'vtkAddonConfig.cmake' for a build tree
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/vtkAddonConfig.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/vtkAddonConfig.cmake
