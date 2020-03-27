@@ -193,13 +193,22 @@ install(TARGETS ${lib_name}
 # Python Wrapping
 # --------------------------------------------------------------------------
 if(vtkAddon_WRAP_PYTHON)
+
+  if(NOT DEFINED ${PROJECT_NAME}_INSTALL_PYTHON_MODULE_LIB_DIR)
+    set(${PROJECT_NAME}_INSTALL_PYTHON_MODULE_LIB_DIR ${${PROJECT_NAME}_INSTALL_LIB_DIR})
+  endif()
+  if(NOT DEFINED ${PROJECT_NAME}_INSTALL_PYTHON_LIB_DIR)
+    set(${PROJECT_NAME}_INSTALL_PYTHON_LIB_DIR ${${PROJECT_NAME}_INSTALL_LIB_DIR})
+  endif()
+
   include(vtkMacroKitPythonWrap)
 
   vtkMacroKitPythonWrap(
     KIT_NAME ${lib_name}
     KIT_SRCS ${vtkAddon_SRCS}
     KIT_INSTALL_BIN_DIR ${${PROJECT_NAME}_INSTALL_BIN_DIR}
-    KIT_INSTALL_LIB_DIR ${${PROJECT_NAME}_INSTALL_LIB_DIR}
+    KIT_INSTALL_LIB_DIR ${${PROJECT_NAME}_INSTALL_PYTHON_LIB_DIR}
+    KIT_MODULE_INSTALL_LIB_DIR ${${PROJECT_NAME}_INSTALL_PYTHON_MODULE_LIB_DIR}
     )
   # Export target
   export(TARGETS ${lib_name}Python ${lib_name}PythonD APPEND FILE ${${PROJECT_NAME}_EXPORT_FILE})
