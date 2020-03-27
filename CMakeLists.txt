@@ -245,3 +245,23 @@ configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/vtkAddonConfig.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/vtkAddonConfig.cmake
   )
+
+# Configuret vtkAddonConfig.cmake for an install tree
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/vtkAddonInstallConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/install/vtkAddonConfig.cmake
+  )
+
+
+# --------------------------------------------------------------------------
+# Install configuration files
+# --------------------------------------------------------------------------
+if(NOT DEFINED ${PROJECT_NAME}_INSTALL_CMAKE_DIR)
+  set(${PROJECT_NAME}_INSTALL_CMAKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
+endif()
+
+install(
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/install/vtkAddonConfig.cmake
+  DESTINATION ${${PROJECT_NAME}_INSTALL_CMAKE_DIR}
+  )
+

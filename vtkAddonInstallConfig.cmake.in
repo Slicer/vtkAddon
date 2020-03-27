@@ -1,0 +1,6 @@
+set(vtkAddon_CMAKE_DIR "@CMAKE_INSTALL_PREFIX@/@vtkAddon_INSTALL_CMAKE_DIR@")
+set(vtkAddon_INCLUDE_DIRS "@CMAKE_INSTALL_PREFIX@/@vtkAddon_INSTALL_INCLUDE_DIR@")
+set(vtkAddon_LIB_DIR "@CMAKE_INSTALL_PREFIX@/@vtkAddon_INSTALL_LIB_DIR@")
+set(VTK_DIR "@VTK_DIR@")
+
+set(vtkAddon_USE_UTF8 "@vtkAddon_USE_UTF8@")
