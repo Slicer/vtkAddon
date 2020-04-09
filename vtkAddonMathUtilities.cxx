@@ -13,18 +13,26 @@
 
 ===============================================================================auto=*/
 
+// std includes
 #include <sstream>
 #include <vector>
 #include <cstdlib>
 #include <cmath>
 
-#include <vtkAddonMathUtilities.h>
+// VTK includes
+#include "vtk_eigen.h"
+#include VTK_EIGEN(Dense)
 #include <vtkMath.h>
 #include <vtkMatrix3x3.h>
 #include <vtkMatrix4x4.h>
 #include <vtkObjectFactory.h>
+#include <vtkPlane.h>
+#include <vtkPoints.h>
 #include <vtksys/RegularExpression.hxx>
 #include <vtkLoggingMacros.h>
+
+// vtkAddon includes
+#include <vtkAddonMathUtilities.h>
 
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkAddonMathUtilities);
@@ -319,6 +327,62 @@ bool vtkAddonMathUtilities::FromString(vtkMatrix4x4* mat, const std::string& str
       mat->SetElement(row, col, elements.at(linearIndex));
       linearIndex++;
       }
+    }
+
+  return true;
+}
+
+//---------------------------------------------------------------------------
+bool vtkAddonMathUtilities::FitPlaneToPoints(vtkPoints* points, vtkPlane* bestFitPlane)
+{
+  if (!points || !bestFitPlane || points->GetNumberOfPoints() < 3)
+    {
+    return false;
+    }
+
+  vtkNew<vtkMatrix4x4> transformToBestFitPlane;
+  if (!vtkAddonMathUtilities::FitPlaneToPoints(points, transformToBestFitPlane))
+    {
+    return false;
+    }
+  bestFitPlane->SetOrigin(transformToBestFitPlane->GetElement(0, 3), transformToBestFitPlane->GetElement(1, 3), transformToBestFitPlane->GetElement(2, 3));
+  bestFitPlane->SetNormal(transformToBestFitPlane->GetElement(0, 2), transformToBestFitPlane->GetElement(1, 2), transformToBestFitPlane->GetElement(2, 2));
+  return true;
+}
+
+//---------------------------------------------------------------------------
+bool vtkAddonMathUtilities::FitPlaneToPoints(vtkPoints* points, vtkMatrix4x4* transformToBestFitPlane)
+{
+  if (!points || !transformToBestFitPlane || points->GetNumberOfPoints() < 3)
+    {
+    return false;
+    }
+
+  vtkIdType numberOfPoints = points->GetNumberOfPoints();
+  Eigen::MatrixXd pointCoords(3, numberOfPoints);
+  double point[3] = { 0.0 };
+  for (vtkIdType pointIndex = 0; pointIndex < numberOfPoints; ++pointIndex)
+    {
+    points->GetPoint(pointIndex, point);
+    pointCoords(0, pointIndex) = point[0];
+    pointCoords(1, pointIndex) = point[1];
+    pointCoords(2, pointIndex) = point[2];
+    }
+
+  // Subtract centroid
+  Eigen::Vector3d centroid(pointCoords.row(0).mean(), pointCoords.row(1).mean(), pointCoords.row(2).mean());
+  pointCoords.row(0).array() -= centroid(0);
+  pointCoords.row(1).array() -= centroid(1);
+  pointCoords.row(2).array() -= centroid(2);
+  Eigen::BDCSVD<Eigen::MatrixXd> svd(pointCoords, Eigen::ComputeFullU);
+
+  transformToBestFitPlane->Identity();
+  for (int row = 0; row < 3; row++)
+    {
+    transformToBestFitPlane->SetElement(row, 0, svd.matrixU()(row, 0));
+    transformToBestFitPlane->SetElement(row, 1, svd.matrixU()(row, 1));
+    transformToBestFitPlane->SetElement(row, 2, svd.matrixU()(row, 2));
+    transformToBestFitPlane->SetElement(row, 3, centroid(row));
     }
 
   return true;

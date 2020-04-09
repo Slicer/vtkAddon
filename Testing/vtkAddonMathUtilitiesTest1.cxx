@@ -23,9 +23,12 @@
 #include "vtkAddonTestingMacros.h"
 
 // vtk includes
+#include <vtkMath.h>
 #include <vtkMatrix3x3.h>
 #include <vtkMatrix4x4.h>
 #include <vtkNew.h>
+#include <vtkPoints.h>
+#include <vtkPlane.h>
 #include <vtkTransform.h>
 
 
@@ -42,6 +45,7 @@ int NormalizeColumnsTest();
 int NormalizeOrientationMatrixColumnsTest();
 int ToString_Test();
 int FromString_Test();
+int PlaneFitTest();
 
 //----------------------------------------------------------------------------
 int vtkAddonMathUtilitiesTest1(int vtkNotUsed(argc), char* vtkNotUsed(argv)[])
@@ -56,6 +60,7 @@ int vtkAddonMathUtilitiesTest1(int vtkNotUsed(argc), char* vtkNotUsed(argv)[])
   CHECK_EXIT_SUCCESS(NormalizeOrientationMatrixColumnsTest());
   CHECK_EXIT_SUCCESS(ToString_Test());
   CHECK_EXIT_SUCCESS(FromString_Test());
+  CHECK_EXIT_SUCCESS(PlaneFitTest());
   return EXIT_SUCCESS;
 }
 
@@ -377,6 +382,31 @@ int FromString_Test()
   // Matlab-style
   CHECK_BOOL(MatrixEqual("[11 22 33 44; 55 66 77 88 99; 1010 1111 1212; 1313 1414 1515 1616]", mat.GetPointer()), true);
   CHECK_BOOL(MatrixEqual("[11, 22, 33, 44; 55, 66, 77, 88, 99; 1010, 1111, 1212; 1313, 1414, 1515, 1616]", mat.GetPointer()), true);
+
+  return EXIT_SUCCESS;
+}
+
+//----------------------------------------------------------------------------
+int PlaneFitTest()
+{
+  vtkNew<vtkPoints> points;
+  vtkNew<vtkPlane> plane;
+
+  points->InsertNextPoint(0.0, 0.0, 0.0);
+  points->InsertNextPoint(1.0, 0.0, 0.0);
+
+  // Cannot fit plane with less than 3 points
+  CHECK_BOOL(vtkAddonMathUtilities::FitPlaneToPoints(points, plane), false);
+
+  points->InsertNextPoint(0.0, 1.0, 0.0);
+
+  // Fit plane with 3 points
+  CHECK_BOOL(vtkAddonMathUtilities::FitPlaneToPoints(points, plane), true);
+
+
+  double zUnitVector[3] = { 0.0, 0.0, 1.0 };
+  double tolerance = 1e-3;
+  CHECK_DOUBLE_TOLERANCE(std::abs(vtkMath::Dot(plane->GetNormal(), zUnitVector)), 1.0, tolerance);
 
   return EXIT_SUCCESS;
 }
