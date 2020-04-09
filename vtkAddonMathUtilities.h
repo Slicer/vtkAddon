@@ -25,6 +25,8 @@
 
 class vtkMatrix4x4;
 class vtkMatrix3x3;
+class vtkPlane;
+class vtkPoints;
 
 class VTK_ADDON_EXPORT vtkAddonMathUtilities : public vtkObject
 {
@@ -74,6 +76,12 @@ public:
 
   /// Convert a string in row-major order to a matrix
   static bool FromString(vtkMatrix4x4* mat, const std::string& str, const std::string delimiterExp = "(\\ |\\,|\\:|\\;|\t|\n|\\[|\\])");
+
+  /// Compute least squares best fit plane
+  static bool FitPlaneToPoints(vtkPoints* points, vtkPlane* bestFitPlane);
+
+  /// Compute transform that best transforms the XY plane to the best fit plane
+  static bool FitPlaneToPoints(vtkPoints* points, vtkMatrix4x4* transformToBestFitPlane);
 
 protected:
   vtkAddonMathUtilities();
