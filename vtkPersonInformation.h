@@ -28,6 +28,10 @@ public:
   vtkTypeMacro(vtkPersonInformation,vtkObject);
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
+  /* Explicitly deleted functions belong in the public interface */
+  vtkPersonInformation(const vtkPersonInformation&) = delete;
+  void operator=(const vtkPersonInformation&) = delete;
+
   // Description:
   // Set/Get username.
   // Set method
@@ -98,10 +102,6 @@ protected:
   std::string DecodeString(const std::string& value);
 
   std::map<std::string, std::string> Data;
-
-private:
-  vtkPersonInformation(const vtkPersonInformation&) = delete;
-  void operator=(const vtkPersonInformation&) = delete;
 };
 
 #endif

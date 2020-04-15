@@ -50,6 +50,10 @@ public:
   vtkTypeMacro(vtkStreamingVolumeCodec, vtkObject);
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
+  /* Explicitly deleted functions belong in the public interface */
+  vtkStreamingVolumeCodec(const vtkStreamingVolumeCodec&) = delete;
+  void operator=(const vtkStreamingVolumeCodec&) = delete;
+
   /// Returns the FourCC code representing the codec
   /// See https://www.fourcc.org/codecs.php for an incomplete list
   virtual std::string GetFourCC() = 0;
@@ -177,10 +181,6 @@ protected:
 protected:
   vtkStreamingVolumeCodec();
   ~vtkStreamingVolumeCodec() override;
-
-private:
-  vtkStreamingVolumeCodec(const vtkStreamingVolumeCodec&) = delete;
-  void operator=(const vtkStreamingVolumeCodec&) = delete;
 
 protected:
   std::vector<std::string>                  AvailiableParameterNames;

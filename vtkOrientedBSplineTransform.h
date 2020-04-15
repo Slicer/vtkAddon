@@ -38,6 +38,10 @@ public:
   vtkTypeMacro(vtkOrientedBSplineTransform,vtkBSplineTransform);
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
+  /* Explicitly deleted functions belong in the public interface */
+  vtkOrientedBSplineTransform(const vtkOrientedBSplineTransform&) = delete;
+  void operator=(const vtkOrientedBSplineTransform&) = delete;
+
   // Description:
   // Make another transform of the same type.
   vtkAbstractTransform *MakeTransform() override;
@@ -92,10 +96,6 @@ protected:
   vtkMatrix4x4* GridIndexToOutputTransformMatrixCached;
   vtkMatrix4x4* OutputToGridIndexTransformMatrixCached;
   vtkMatrix4x4* InverseBulkTransformMatrixCached;
-
-private:
-  vtkOrientedBSplineTransform(const vtkOrientedBSplineTransform&) = delete;
-  void operator=(const vtkOrientedBSplineTransform&) = delete;
 };
 
 #endif

@@ -39,6 +39,10 @@ public:
   vtkTypeMacro(vtkOpenGLShaderComputation,vtkObject);
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
+  /* Explicitly deleted functions belong in the public interface */
+  vtkOpenGLShaderComputation(const vtkOpenGLShaderComputation&) = delete;
+  void operator=(const vtkOpenGLShaderComputation&) = delete;
+
   // Description:
   // Loads the required extensions
   void Initialize(vtkRenderWindow *renderWindow);
@@ -113,8 +117,6 @@ protected:
   ~vtkOpenGLShaderComputation() override;
 
 private:
-  vtkOpenGLShaderComputation(const vtkOpenGLShaderComputation&) = delete;
-  void operator=(const vtkOpenGLShaderComputation&) = delete;
 
   bool Initialized;
   bool ErrorOccurred;
