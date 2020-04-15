@@ -1,8 +1,12 @@
-project(vtkAddon)
-
 #-----------------------------------------------------------------------------
 cmake_minimum_required(VERSION 3.13.4)
 #-----------------------------------------------------------------------------
+
+project(vtkAddon
+  LANGUAGES CXX
+  DESCRIPTION "General-purpose features that may be integrated into VTK library in the future."
+)
+
 
 set(vtkAddon_CMAKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
 set(CMAKE_MODULE_PATH ${vtkAddon_CMAKE_DIR} ${CMAKE_MODULE_PATH})
