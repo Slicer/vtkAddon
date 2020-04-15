@@ -28,6 +28,10 @@ public:
   vtkTypeMacro(vtkOrientedGridTransform,vtkGridTransform);
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
+  /* Explicitly deleted functions belong in the public interface */
+  vtkOrientedGridTransform(const vtkOrientedGridTransform&) = delete;
+  void operator=(const vtkOrientedGridTransform&) = delete;
+
   // Description:
   // Set/Get the b-spline grid axis directions.
   // This transform class will never modify the data.
@@ -91,10 +95,6 @@ protected:
   // Avoid generating hundreds of warning messages for convergence problems
   // by keeping track of the MTime when the last warning was issued.
   vtkMTimeType LastWarningMTime;
-
-private:
-  vtkOrientedGridTransform(const vtkOrientedGridTransform&) = delete;
-  void operator=(const vtkOrientedGridTransform&) = delete;
 };
 
 #endif

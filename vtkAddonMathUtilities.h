@@ -31,6 +31,9 @@ class vtkPoints;
 class VTK_ADDON_EXPORT vtkAddonMathUtilities : public vtkObject
 {
 public:
+  vtkAddonMathUtilities(const vtkAddonMathUtilities&) = delete;
+  void operator=(const vtkAddonMathUtilities&) = delete;
+
   static vtkAddonMathUtilities *New();
   vtkTypeMacro(vtkAddonMathUtilities,vtkObject);
   void PrintSelf(ostream& os, vtkIndent indent) override;
@@ -86,10 +89,6 @@ public:
 protected:
   vtkAddonMathUtilities();
   ~vtkAddonMathUtilities() override;
-
-private:
-  vtkAddonMathUtilities(const vtkAddonMathUtilities&) = delete;
-  void operator=(const vtkAddonMathUtilities&) = delete;
 };
 
 #endif

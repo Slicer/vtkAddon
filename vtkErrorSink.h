@@ -31,6 +31,10 @@ public:
   void PrintSelf(ostream& os, vtkIndent indent) override;
   typedef vtkErrorSink Self;
 
+  /* Explicitly deleted functions belong in the public interface */
+  vtkErrorSink(const vtkErrorSink&) = delete;
+  void operator=(const vtkErrorSink&) = delete;
+
   /// Observe error and warnings reported by observedObject.
   virtual void SetObservedObject(vtkObject* observedObject);
 
@@ -62,9 +66,6 @@ protected:
   vtkSmartPointer<vtkCallbackCommand> CallbackCommand;
 
 private:
-  vtkErrorSink(const vtkErrorSink&) = delete;
-  void operator=(const vtkErrorSink&) = delete;
-
   static void CallbackFunction(vtkObject*, long unsigned int,
     void* clientData, void* callData);
 };

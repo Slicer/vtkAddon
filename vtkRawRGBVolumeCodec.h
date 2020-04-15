@@ -32,6 +32,10 @@ public:
   vtkStreamingVolumeCodec* CreateCodecInstance() override;
   vtkTypeMacro(vtkRawRGBVolumeCodec, vtkStreamingVolumeCodec);
 
+  /* Explicitly deleted functions belong in the public interface */
+  vtkRawRGBVolumeCodec(const vtkRawRGBVolumeCodec&) = delete;
+  void operator=(const vtkRawRGBVolumeCodec&) = delete;
+
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // FourCC code representing 24-bit RGB using 8 bits per color
@@ -54,10 +58,6 @@ protected:
   /// Return the codec parameter description
   /// There are no parameters to update within this codec
   std::string GetParameterDescription(std::string vtkNotUsed(parameterName)) override { return ""; };
-
-private:
-  vtkRawRGBVolumeCodec(const vtkRawRGBVolumeCodec&) = delete;
-  void operator=(const vtkRawRGBVolumeCodec&) = delete;
 };
 
 #endif

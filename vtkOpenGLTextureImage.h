@@ -64,6 +64,10 @@ public:
   vtkTypeMacro(vtkOpenGLTextureImage,vtkObject);
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
+  /* Explicitly deleted functions belong in the public interface */
+  vtkOpenGLTextureImage(const vtkOpenGLTextureImage&) = delete;
+  void operator=(const vtkOpenGLTextureImage&) = delete;
+
   // Description:
   // The ShaderComputation used to manage the OpenGL context and shaders
   vtkGetObjectMacro(ShaderComputation, vtkOpenGLShaderComputation);
@@ -152,9 +156,6 @@ protected:
   ~vtkOpenGLTextureImage() override;
 
 private:
-  vtkOpenGLTextureImage(const vtkOpenGLTextureImage&) = delete;
-  void operator=(const vtkOpenGLTextureImage&) = delete;
-
   vtkOpenGLShaderComputation *ShaderComputation;
   vtkImageData *ImageData;
   vtkTypeUInt32 TextureName;

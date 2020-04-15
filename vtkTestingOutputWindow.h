@@ -47,6 +47,10 @@ class VTK_ADDON_EXPORT vtkTestingOutputWindow : public vtkOutputWindow
 public:
   vtkTypeMacro(vtkTestingOutputWindow, vtkOutputWindow);
   static vtkTestingOutputWindow* New();
+
+  /* Explicitly deleted functions belong in the public interface */
+  vtkTestingOutputWindow(const vtkTestingOutputWindow&) = delete;
+  void operator=(const vtkTestingOutputWindow&) = delete;
   
   // Gets a pointer to the singleton testing output window instance.
   // If the current VTK output window is not vtkTestingOutputWindow type then
@@ -86,10 +90,6 @@ protected:
   int NumberOfLoggedWarningMessages{0};
   int NumberOfLoggedErrorMessages{0};
   int NumberOfLoggedMessages{0};
-
-private:
-  vtkTestingOutputWindow(const vtkTestingOutputWindow&) = delete;
-  void operator=(const vtkTestingOutputWindow&) = delete;
 };
 
 

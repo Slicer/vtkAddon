@@ -37,6 +37,10 @@ public:
   vtkTypeMacro(vtkStreamingVolumeFrame, vtkObject);
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
+  /* Explicitly deleted functions belong in the public interface */
+  vtkStreamingVolumeFrame(const vtkStreamingVolumeFrame&) = delete;
+  void operator=(const vtkStreamingVolumeFrame&) = delete;
+
   /// Enum for frame type
   /// For more information on frame types see: https://en.wikipedia.org/wiki/Video_compression_picture_types
   enum
@@ -93,10 +97,5 @@ protected:
 protected:
   vtkStreamingVolumeFrame();
   ~vtkStreamingVolumeFrame() override;
-
-private:
-  vtkStreamingVolumeFrame(const vtkStreamingVolumeFrame&) = delete;
-  void operator=(const vtkStreamingVolumeFrame&) = delete;
-
 };
 #endif
