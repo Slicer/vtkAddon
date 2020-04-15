@@ -35,16 +35,10 @@ vtkTestingOutputWindow* vtkTestingOutputWindow::GetInstance()
 }
 
 //-------------------------------------------------------
-vtkTestingOutputWindow::vtkTestingOutputWindow()
-: NumberOfLoggedWarningMessages(0)
-, NumberOfLoggedErrorMessages(0)
-, NumberOfLoggedMessages(0)
-{
-}
+vtkTestingOutputWindow::vtkTestingOutputWindow() = default;
 
 //-------------------------------------------------------
-vtkTestingOutputWindow::~vtkTestingOutputWindow()
-= default;
+vtkTestingOutputWindow::~vtkTestingOutputWindow() = default;
 
 //-------------------------------------------------------
 void vtkTestingOutputWindow::DisplayText(const char* text)

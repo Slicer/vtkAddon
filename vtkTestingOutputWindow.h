@@ -83,9 +83,9 @@ protected:
   vtkTestingOutputWindow(); 
   ~vtkTestingOutputWindow() override; 
   
-  int NumberOfLoggedWarningMessages;
-  int NumberOfLoggedErrorMessages;
-  int NumberOfLoggedMessages;
+  int NumberOfLoggedWarningMessages{0};
+  int NumberOfLoggedErrorMessages{0};
+  int NumberOfLoggedMessages{0};
 
 private:
   vtkTestingOutputWindow(const vtkTestingOutputWindow&) = delete;
