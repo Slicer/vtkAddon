@@ -5,6 +5,8 @@ macro(VTK_WRAP_HIERARCHY module_name OUTPUT_DIR SOURCES)
   if(NOT VTK_WRAP_HIERARCHY_EXE)
     if(TARGET vtkWrapHierarchy)
       set(VTK_WRAP_HIERARCHY_EXE vtkWrapHierarchy)
+    elseif(TARGET VTK::WrapHierarchy)
+      set(VTK_WRAP_HIERARCHY_EXE VTK::WrapHierarchy)
     else()
       message(SEND_ERROR "VTK_WRAP_HIERARCHY_EXE not specified when calling VTK_WRAP_HIERARCHY")
     endif()
@@ -87,9 +89,16 @@ $<$<BOOL:$<TARGET_PROPERTY:${module_name},INCLUDE_DIRECTORIES>>:
       # add to the INPUT_FILES
       list(APPEND INPUT_FILES ${TMP_INPUT})
 
+      set(_name ${module_name})
+      if(${VTK_VERSION} VERSION_GREATER_EQUAL "8.90")
+        if(VTK_ENABLE_KITS AND ${_name}_KIT)
+          set(_name "${${_name}_KIT}Kit")
+        endif()
+      endif()
+
       # add the info to the init file
       set(VTK_WRAPPER_INIT_DATA
-        "${VTK_WRAPPER_INIT_DATA}${TMP_INPUT};${module_name}")
+        "${VTK_WRAPPER_INIT_DATA}${TMP_INPUT};${_name}")
 
       set(VTK_WRAPPER_INIT_DATA "${VTK_WRAPPER_INIT_DATA}\n")
 
