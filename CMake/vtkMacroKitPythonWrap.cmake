@@ -26,7 +26,12 @@
 #   - _<module_name>_wrap_include_dirs
 # Ignores VTK dependencies.
 macro(_get_dependencies_recurse module_name dep)
-  string(REGEX REPLACE "(.+)PythonD\$" "\\1" _dep_base ${dep})
+  if(${VTK_VERSION} VERSION_LESS "8.90")
+    string(REGEX REPLACE "(.+)PythonD\$" "\\1" _dep_base ${dep})
+  else()
+    set(_dep_base ${dep})
+  endif()
+
   if(${_dep_base}_WRAP_HIERARCHY_FILE)
     list(APPEND _${module_name}_wrap_depends ${_dep_base})
   endif()
@@ -95,7 +100,16 @@ macro(vtkMacroKitPythonWrap)
 
   # Sanity checks
   set(expected_defined_vars
-    VTK_CMAKE_DIR VTK_WRAP_PYTHON BUILD_SHARED_LIBS VTK_LIBRARIES)
+    BUILD_SHARED_LIBS
+    VTK_LIBRARIES
+    )
+  if(${VTK_VERSION} VERSION_LESS "8.90")
+    list(APPEND expected_defined_vars
+      VTK_CMAKE_DIR
+      VTK_WRAP_PYTHON
+      )
+  endif()
+
   foreach(var ${expected_defined_vars})
     if(NOT DEFINED ${var})
       message(FATAL_ERROR "error: ${var} CMake variable is not defined !")
@@ -152,7 +166,27 @@ macro(vtkMacroKitPythonWrap)
     # Add VTK dependencies
     foreach(_dep ${VTK_LIBRARIES})
       list(APPEND _kit_wrap_depends ${_dep})
+      if(${VTK_VERSION} VERSION_GREATER_EQUAL "8.90" AND _dep MATCHES "^VTK::")
+        _vtk_module_get_module_property("${_dep}"
+          PROPERTY  "hierarchy"
+          VARIABLE  _vtk_python_hierarchy_file
+          )
+        if(_vtk_python_hierarchy_file)
+          set(${_dep}_WRAP_HIERARCHY_FILE ${_vtk_python_hierarchy_file})
+        endif()
+      endif()
     endforeach()
+
+    # VTK  < 8.90: KIT_PYTHON_LIBRARIES is explicitly passed as a parameter
+    #              to vtkMacroKitPythonWrap
+    # VTK >= 8.90: Automatically set to the dependencies of the kit being wrapped
+    #              based on the LINK_LIBRARIES target property
+    if(${VTK_VERSION} VERSION_GREATER_EQUAL "8.90")
+      if(NOT "${MY_KIT_PYTHON_LIBRARIES}" STREQUAL "")
+        message(WARNING "vtkMacroKitPythonWrap: Parameter KIT_PYTHON_LIBRARIES is ignored when building with VTK >= 8.90  [VTK_VERSION: ${VTK_VERSION}, KIT_PYTHON_LIBRARIES: ${MY_KIT_PYTHON_LIBRARIES}]")
+      endif()
+      get_target_property(MY_KIT_PYTHON_LIBRARIES ${MY_KIT_NAME} LINK_LIBRARIES)
+    endif()
 
     # Recursively add dependencies and get their include directories
     foreach(_dep ${MY_KIT_PYTHON_LIBRARIES})
@@ -195,6 +229,8 @@ macro(vtkMacroKitPythonWrap)
     VTK_WRAP_PYTHON3(${MY_KIT_NAME}Python KitPython_SRCS "${TMP_WRAP_FILES}")
 
     include_directories("${PYTHON_INCLUDE_PATH}")
+
+    if(${VTK_VERSION} VERSION_LESS "8.90")
 
     # Create a python module that can be loaded dynamically.  It links to
     # the shared library containing the wrappers for this kit.
@@ -261,6 +297,32 @@ macro(vtkMacroKitPythonWrap)
     target_link_libraries(${MY_KIT_NAME}Python
       ${MY_KIT_NAME}PythonD
       )
+
+    else()
+
+    # Create a python module that can be loaded dynamically.
+    add_library(${MY_KIT_NAME}Python MODULE
+       ${MY_KIT_NAME}PythonInit.cxx
+       ${KitPython_SRCS}
+       ${MY_KIT_PYTHON_EXTRA_SRCS}
+       )
+
+    # Include the hierarchy stamp file in the main kit library to ensure
+    # hierarchy file is created.
+    # XXX Use target_sources if cmake_minimum_required >= 3.1
+    get_target_property(_kit_srcs ${MY_KIT_NAME} SOURCES)
+    list(APPEND _kit_srcs ${_wrap_hierarchy_file})
+    set_target_properties(${MY_KIT_NAME} PROPERTIES SOURCES "${_kit_srcs}")
+
+    target_link_libraries(${MY_KIT_NAME}Python
+      PRIVATE
+        ${MY_KIT_NAME}
+        ${VTK_PYTHON_LIBRARIES}
+        VTK::WrappingPythonCore
+        VTK::Python
+        )
+
+    endif()
 
     # Python extension modules on Windows must have the extension ".pyd"
     # instead of ".dll" as of Python 2.5.  Older python versions do support

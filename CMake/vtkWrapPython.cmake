@@ -10,6 +10,8 @@ macro(VTK_WRAP_PYTHON3 TARGET SRC_LIST_NAME SOURCES)
   if(NOT VTK_WRAP_PYTHON_INIT_EXE)
     if(TARGET vtkWrapPythonInit)
       set(VTK_WRAP_PYTHON_INIT_EXE vtkWrapPythonInit)
+    elseif(TARGET VTK::WrapPythonInit)
+      set(VTK_WRAP_PYTHON_INIT_EXE VTK::WrapPythonInit)
     else()
       message(SEND_ERROR
         "VTK_WRAP_PYTHON_INIT_EXE not specified when calling vtk_wrap_python")
@@ -18,6 +20,8 @@ macro(VTK_WRAP_PYTHON3 TARGET SRC_LIST_NAME SOURCES)
   if(NOT VTK_WRAP_PYTHON_EXE)
     if(TARGET vtkWrapPython)
       set(VTK_WRAP_PYTHON_EXE vtkWrapPython)
+    elseif(TARGET VTK::WrapPython)
+      set(VTK_WRAP_PYTHON_EXE VTK::WrapPython)
     else()
       message(SEND_ERROR
         "VTK_WRAP_PYTHON_EXE not specified when calling vtk_wrap_python")
@@ -39,13 +43,16 @@ macro(VTK_WRAP_PYTHON3 TARGET SRC_LIST_NAME SOURCES)
   foreach(file IN LISTS VTK_WRAP_HINTS)
     set(_common_args "${_common_args}--hints \"${file}\"\n")
   endforeach()
-  foreach(file IN LISTS KIT_HIERARCHY_FILE)
-    set(_common_args "${_common_args}--types \"${file}\"\n")
-  endforeach()
 
   # write wrapper-tool arguments to a file
   set(_args_file ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.$<CONFIGURATION>.args)
   file(GENERATE OUTPUT ${_args_file} CONTENT "${_common_args}
+$<$<BOOL:${KIT_HIERARCHY_FILE}>:
+--types \"$<JOIN:${KIT_HIERARCHY_FILE},\"
+--types \">\">
+$<$<BOOL:${OTHER_HIERARCHY_FILES}>:
+--types \"$<JOIN:${OTHER_HIERARCHY_FILES},\"
+--types \">\">
 $<$<BOOL:$<TARGET_PROPERTY:${TARGET},COMPILE_DEFINITIONS>>:
 -D\"$<JOIN:$<TARGET_PROPERTY:${TARGET},COMPILE_DEFINITIONS>,\"
 -D\">\">
@@ -108,6 +115,7 @@ $<$<BOOL:$<TARGET_PROPERTY:${TARGET},INCLUDE_DIRECTORIES>>:
               ${TMP_INPUT}
               ${_args_file}
               ${hierarchy_depend}
+      IMPLICIT_DEPENDS CXX ${TMP_INPUT}
       COMMAND ${VTK_WRAP_PYTHON_EXE}
               @${_args_file}
               -o ${CMAKE_CURRENT_BINARY_DIR}/${TMP_FILENAME}Python.cxx
@@ -131,6 +139,40 @@ $<$<BOOL:$<TARGET_PROPERTY:${TARGET},INCLUDE_DIRECTORIES>>:
       endif()
     endif()
   endforeach()
+
+  if(${VTK_VERSION} VERSION_GREATER_EQUAL "8.90")
+    # find the python modules needed by this python module
+    string(REGEX REPLACE "Python$" "" _basename "${TARGET}")
+    string(REGEX REPLACE "Kit$" "" kit_basename "${_basename}")
+    if(_${kit_basename}_is_kit)
+      set(${_basename}_WRAP_DEPENDS)
+      foreach(kit_module IN LISTS _${kit_basename}_modules)
+        list(APPEND ${_basename}_WRAP_DEPENDS
+          ${${kit_module}_WRAP_DEPENDS})
+      endforeach()
+    endif()
+    set(_python_module_depends)
+    foreach(dep IN LISTS ${_basename}_WRAP_DEPENDS)
+      if(dep STREQUAL "${_basename}" OR dep STREQUAL "${kit_basename}")
+        continue()
+      endif()
+      if(VTK_ENABLE_KITS AND ${dep}_KIT)
+        if(NOT ${dep}_KIT STREQUAL kit_basename)
+          list(APPEND _python_module_depends ${${dep}_KIT}KitPython)
+        endif()
+      elseif(TARGET ${dep}Python AND NOT ${dep} MATCHES "VTK::")
+        list(APPEND _python_module_depends ${dep}Python)
+      endif()
+    endforeach()
+    if(_python_module_depends)
+      # add a DEPENDS section to the Init.data file for this module
+      set(VTK_WRAPPER_INIT_DATA "${VTK_WRAPPER_INIT_DATA}\nDEPENDS")
+      list(REMOVE_DUPLICATES _python_module_depends)
+      foreach(dep IN LISTS _python_module_depends)
+        set(VTK_WRAPPER_INIT_DATA "${VTK_WRAPPER_INIT_DATA}\n${dep}")
+      endforeach()
+    endif()
+  endif()
 
   # finish the data file for the init file
   configure_file(
