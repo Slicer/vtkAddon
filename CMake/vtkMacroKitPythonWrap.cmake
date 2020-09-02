@@ -72,7 +72,7 @@ endmacro()
 #!   Slicer_VTK_WRAP_HIERARCHY_DIR:
 #!
 #!     Directory where to output the hierarchy files
-#!     Default is ${Slicer_BINARY_DIR}
+#!     Default is ${CMAKE_CURRENT_BINARY_DIR}
 #!
 #!   Slicer_VTK_WRAP_MODULE_INSTALL_COMPONENT_IDENTIFIER:
 #!
@@ -132,7 +132,7 @@ macro(vtkMacroKitPythonWrap)
 
     # Tell vtkWrapPython.cmake to set VTK_PYTHON_LIBRARIES for us.
     set(VTK_WRAP_PYTHON_FIND_LIBS 1)
-    include(${VTK_CMAKE_DIR}/vtkWrapPython.cmake)
+    include(vtkWrapPython)
 
     set(TMP_WRAP_FILES ${MY_KIT_SRCS} ${MY_KIT_WRAP_HEADERS})
     set(_wrap_hierarchy_stamp_file)
@@ -177,7 +177,7 @@ macro(vtkMacroKitPythonWrap)
 
     # Generate hierarchy files for VTK8 and later
     if(NOT ${VTK_VERSION_MAJOR} VERSION_LESS 8)
-      include(${VTK_CMAKE_DIR}/vtkWrapHierarchy.cmake)
+      include(vtkWrapHierarchy)
 
       # Set variables for this and future runs of vtk_wrap_hierarchy:
       #  - <module_name>_WRAP_DEPENDS
