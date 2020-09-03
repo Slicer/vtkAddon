@@ -118,7 +118,6 @@ macro(vtkMacroKitPythonWrap)
   endif()
   # Default global variables
   if(NOT DEFINED Slicer_VTK_WRAP_HIERARCHY_DIR)
-#    set(Slicer_VTK_WRAP_HIERARCHY_DIR ${Slicer_BINARY_DIR})
     set(Slicer_VTK_WRAP_HIERARCHY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
   endif()
   if(NOT DEFINED Slicer_VTK_WRAP_MODULE_INSTALL_COMPONENT_IDENTIFIER)
@@ -135,7 +134,6 @@ macro(vtkMacroKitPythonWrap)
     include(vtkWrapPython)
 
     set(TMP_WRAP_FILES ${MY_KIT_SRCS} ${MY_KIT_WRAP_HEADERS})
-    set(_wrap_hierarchy_stamp_file)
 
     # Create list of wrapping dependencies for generating the hierarchy file.
     set(_kit_wrap_depends)
@@ -176,7 +174,6 @@ macro(vtkMacroKitPythonWrap)
     list(APPEND VTK_WRAP_INCLUDE_DIRS ${_kit_wrap_include_dirs})
 
     # Generate hierarchy files for VTK8 and later
-    if(NOT ${VTK_VERSION_MAJOR} VERSION_LESS 8)
       include(vtkWrapHierarchy)
 
       # Set variables for this and future runs of vtk_wrap_hierarchy:
@@ -184,9 +181,6 @@ macro(vtkMacroKitPythonWrap)
       #  - <module_name>_WRAP_HIERARCHY_FILE
       set(${MY_KIT_NAME}_WRAP_DEPENDS "${_kit_wrap_depends}" CACHE INTERNAL "${MY_KIT_NAME} wrapping dependencies" FORCE)
       set(_wrap_hierarchy_file "${Slicer_VTK_WRAP_HIERARCHY_DIR}/${MY_KIT_NAME}Hierarchy.txt")
-      if(${VTK_VERSION_MAJOR}.${VTK_VERSION_MINOR} VERSION_LESS "8.2")
-        set(_wrap_hierarchy_stamp_file ${CMAKE_CURRENT_BINARY_DIR}/${MY_KIT_NAME}Hierarchy.stamp.txt)
-      endif()
       set(${MY_KIT_NAME}_WRAP_HIERARCHY_FILE "${_wrap_hierarchy_file}" CACHE INTERNAL "${MY_KIT_NAME} wrap hierarchy file" FORCE)
 
       set_property(GLOBAL APPEND PROPERTY ${Slicer_VTK_WRAP_HIERARCHY_TARGETS_PROPERTY_NAME} ${MY_KIT_NAME})
@@ -197,7 +191,6 @@ macro(vtkMacroKitPythonWrap)
 
       # Generate hierarchy files
       vtk_wrap_hierarchy(${MY_KIT_NAME} ${Slicer_VTK_WRAP_HIERARCHY_DIR} "${TMP_WRAP_FILES}")
-    endif()
 
     VTK_WRAP_PYTHON3(${MY_KIT_NAME}Python KitPython_SRCS "${TMP_WRAP_FILES}")
 
@@ -211,11 +204,7 @@ macro(vtkMacroKitPythonWrap)
     # hierarchy file is created.
     # XXX Use target_sources if cmake_minimum_required >= 3.1
     get_target_property(_kit_srcs ${MY_KIT_NAME} SOURCES)
-    if(${VTK_VERSION_MAJOR}.${VTK_VERSION_MINOR} VERSION_LESS "8.2")
-      list(APPEND _kit_srcs ${_wrap_hierarchy_stamp_file})
-    else()
-      list(APPEND _kit_srcs ${_wrap_hierarchy_file})
-    endif()
+    list(APPEND _kit_srcs ${_wrap_hierarchy_file})
     set_target_properties(${MY_KIT_NAME} PROPERTIES SOURCES "${_kit_srcs}")
 
     set(VTK_KIT_PYTHON_LIBRARIES)
