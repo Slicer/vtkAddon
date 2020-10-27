@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.13.4)
 #-----------------------------------------------------------------------------
 
 project(vtkAddon
-  LANGUAGES CXX
+  LANGUAGES CXX C
   DESCRIPTION "General-purpose features that may be integrated into VTK library in the future."
 )
 
