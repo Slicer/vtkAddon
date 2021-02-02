@@ -46,6 +46,10 @@ if(NOT DEFINED vtkAddon_WRAP_PYTHON)
   cmake_dependent_option(vtkAddon_WRAP_PYTHON "Build python wrapping" OFF "VTK_WRAP_PYTHON" OFF)
 endif()
 
+if(NOT DEFINED vtkAddon_LAUNCH_COMMAND)
+  set(vtkAddon_LAUNCH_COMMAND "" CACHE STRING "Command for setting up environment and running executables")
+endif()
+
 # --------------------------------------------------------------------------
 # Configure headers
 # --------------------------------------------------------------------------
