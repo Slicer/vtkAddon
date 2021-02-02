@@ -15,7 +15,7 @@ target_link_libraries(${KIT}CxxTests ${lib_name})
 set_target_properties(${KIT}CxxTests PROPERTIES FOLDER ${${PROJECT_NAME}_FOLDER})
 
 function(vtkaddon_add_test testname)
-  add_test(NAME ${testname} COMMAND $<TARGET_FILE:${KIT}CxxTests> ${testname} ${ARGN})
+  add_test(NAME ${testname} COMMAND ${vtkAddon_LAUNCH_COMMAND} $<TARGET_FILE:${KIT}CxxTests> ${testname} ${ARGN})
   set_property(TEST ${testname} PROPERTY LABELS ${KIT})
 endfunction()
 
