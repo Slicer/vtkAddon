@@ -4,6 +4,7 @@ create_test_sourcelist(Tests ${KIT}CxxTests.cxx
   vtkAddonMathUtilitiesTest1.cxx
   vtkAddonTestingUtilitiesTest1.cxx
   vtkLoggingMacrosTest1.cxx
+  vtkParallelTransportTest1.cxx
   vtkPersonInformationTest1.cxx
   )
 
