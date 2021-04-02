@@ -105,6 +105,8 @@ set(vtkAddon_SRCS
   vtkAddonMathUtilities.h
   vtkAddonMathUtilities.cxx
   vtkAddonSetGet.h
+  vtkParallelTransportFrame.cxx
+  vtkParallelTransportFrame.h
   vtkStreamingVolumeCodec.cxx
   vtkStreamingVolumeCodec.h
   vtkStreamingVolumeFrame.cxx
