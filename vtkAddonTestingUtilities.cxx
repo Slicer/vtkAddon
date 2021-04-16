@@ -22,6 +22,7 @@
 
 // STD includes
 #include <iostream>
+#include <cmath> // for fabs
 
 namespace vtkAddonTestingUtilities
 {
