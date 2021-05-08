@@ -7,6 +7,8 @@
 
 =========================================================================auto=*/
 
+#include <algorithm> // VTK 8.2.0 has bug for C++17 "clamp" function (algorithm must be included before vtMath.h)
+
 #include "vtkOrientedGridTransform.h"
 
 #include "vtkMath.h"
