@@ -15,6 +15,8 @@
     See https://github.com/vmtk/vmtk/blob/master/LICENSE file for details.
 */
 
+#include <algorithm> // VTK 8.2.0 has bug for C++17 "clamp" function (algorithm must be included before vtMath.h)
+
 #include "vtkParallelTransportFrame.h"
 
 #include "vtkDoubleArray.h"
