@@ -284,15 +284,19 @@ install(
   DESTINATION ${${PROJECT_NAME}_INSTALL_CMAKE_DIR}
   )
 
+install(TARGETS ${lib_name} EXPORT vtkAddonTargets)
+install(EXPORT vtkAddonTargets
+    DESTINATION ${${PROJECT_NAME}_INSTALL_CMAKE_DIR}
+)
+
 # Install vtkAddon CMake files
 install(
   FILES
-  ${CMAKE_SOURCE_DIR}/CMake/vtkAddonFunctionAddExecutable.cmake
-  ${CMAKE_SOURCE_DIR}/CMake/vtkAddonFunctionAddExecutable.cmake
-  ${CMAKE_SOURCE_DIR}/CMake/vtkMacroKitPythonWrap.cmake
-  ${CMAKE_SOURCE_DIR}/CMake/vtkWrapHierarchy.cmake
-  ${CMAKE_SOURCE_DIR}/CMake/vtkWrapperInit.data.in
-  ${CMAKE_SOURCE_DIR}/CMake/vtkWrapPython.cmake
-  ${CMAKE_SOURCE_DIR}/CMake/WindowsApplicationUseUtf8.manifest
+  ${CMAKE_CURRENT_SOURCE_DIR}/CMake/vtkAddonFunctionAddExecutable.cmake
+  ${CMAKE_CURRENT_SOURCE_DIR}/CMake/vtkMacroKitPythonWrap.cmake
+  ${CMAKE_CURRENT_SOURCE_DIR}/CMake/vtkWrapHierarchy.cmake
+  ${CMAKE_CURRENT_SOURCE_DIR}/CMake/vtkWrapperInit.data.in
+  ${CMAKE_CURRENT_SOURCE_DIR}/CMake/vtkWrapPython.cmake
+  ${CMAKE_CURRENT_SOURCE_DIR}/CMake/WindowsApplicationUseUtf8.manifest
   DESTINATION ${${PROJECT_NAME}_INSTALL_CMAKE_DIR} COMPONENT Development
   )

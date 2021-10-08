@@ -1,3 +1,5 @@
+include("@CMAKE_INSTALL_PREFIX@/@vtkAddon_INSTALL_CMAKE_DIR@/vtkAddonTargets.cmake")
+
 set(vtkAddon_CMAKE_DIR "@CMAKE_INSTALL_PREFIX@/@vtkAddon_INSTALL_CMAKE_DIR@")
 set(vtkAddon_INCLUDE_DIRS "@CMAKE_INSTALL_PREFIX@/@vtkAddon_INSTALL_INCLUDE_DIR@")
 set(vtkAddon_LIB_DIR "@CMAKE_INSTALL_PREFIX@/@vtkAddon_INSTALL_LIB_DIR@")
