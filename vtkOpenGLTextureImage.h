@@ -27,7 +27,11 @@
 #include "vtk_glew.h"
 
 #include "vtkOpenGLShaderComputation.h"
-#include "vtkOpenGL.h"
+#include "vtkVersionMacros.h"
+// vtkOpenGL.h is deprecated for vtk < 9.1. Use vtk_glew.h instead.
+#if !(VTK_MAJOR_VERSION >= 9 && VTK_MINOR_VERSION >= 1)
+  #include "vtkOpenGL.h"
+#endif
 
 #include "vtkImageData.h"
 

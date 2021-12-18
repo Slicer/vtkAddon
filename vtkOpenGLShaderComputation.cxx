@@ -19,7 +19,10 @@
 #include "vtkDataArray.h"
 #include "vtkImageData.h"
 #include "vtkObjectFactory.h"
-#include "vtkOpenGL.h"
+// vtkOpenGL.h is deprecated for vtk < 9.1. Use vtk_glew.h instead.
+#if !(VTK_MAJOR_VERSION >= 9 && VTK_MINOR_VERSION >= 1)
+  #include "vtkOpenGL.h"
+#endif
 #include "vtkOpenGLError.h"
 #include "vtkOpenGLRenderWindow.h"
 #include "vtkPointData.h"
