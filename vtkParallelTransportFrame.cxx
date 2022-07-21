@@ -119,7 +119,7 @@ int vtkParallelTransportFrame::RequestData(
   int numberOfCells = input->GetNumberOfCells();
   for (int cellIndex = 0; cellIndex < numberOfCells; cellIndex++)
     {
-    this->ComputeAxisDirections(input, cellIndex, tangentsArray, normalsArray, binormalsArray);
+    this->ComputeAxisDirections2(input, cellIndex, tangentsArray, normalsArray, binormalsArray);
     }
 
   output->GetPointData()->AddArray(tangentsArray);
@@ -247,6 +247,165 @@ void vtkParallelTransportFrame::ComputeAxisDirections(vtkPolyData* input, vtkIdT
     tangentsArray->SetTuple(pointId2, tangent1);
     normalsArray->SetTuple(pointId2, normal1);
     binormalsArray->SetTuple(pointId2, binormal1);
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkParallelTransportFrame::ComputeAxisDirections2(vtkPolyData* input, vtkIdType cellIndex, vtkDoubleArray* tangentsArray, vtkDoubleArray* normalsArray, vtkDoubleArray* binormalsArray)
+{
+  vtkPolyLine* polyLine = vtkPolyLine::SafeDownCast(input->GetCell(cellIndex));
+  if (!polyLine)
+    {
+    return;
+    }
+  vtkIdType numberOfPointsInCell = polyLine->GetNumberOfPoints();
+  if (numberOfPointsInCell < 2)
+    {
+    return;
+    }
+
+  double tangent0[3] = { 0.0, 0.0, 0.0 };
+  vtkIdType pointId0 = polyLine->GetPointId(0);
+  double pointPosition0[3];
+  input->GetPoint(pointId0, pointPosition0);
+
+  // Find tangent by direction vector by moving a minimal distance from the initial point
+  for (int pointIndex = 1; pointIndex < numberOfPointsInCell; pointIndex++)
+    {
+    vtkIdType pointId1 = polyLine->GetPointId(pointIndex);
+    double pointPosition1[3];
+    input->GetPoint(pointId1, pointPosition1);
+    tangent0[0] = pointPosition1[0] - pointPosition0[0];
+    tangent0[1] = pointPosition1[1] - pointPosition0[1];
+    tangent0[2] = pointPosition1[2] - pointPosition0[2];
+    if (vtkMath::Norm(tangent0) >= this->MinimumDistance)
+      {
+      break;
+      }
+    }
+  vtkMath::Normalize(tangent0);
+
+  // Compute initial normal and binormal directions from the initial tangent and preferred
+  // normal/binormal directions.
+  double normal0[3] = {0.0, 0.0, 0.0};
+  double binormal0[3] = {0.0, 0.0, 0.0};
+  vtkMath::Cross(tangent0, this->PreferredInitialNormalVector, binormal0);
+  if (vtkMath::Norm(binormal0) > this->Tolerance)
+    {
+    vtkMath::Normalize(binormal0);
+    vtkMath::Cross(binormal0, tangent0, normal0);
+    }
+  else
+    {
+    vtkMath::Cross(this->PreferredInitialBinormalVector, tangent0, normal0);
+    vtkMath::Normalize(normal0);
+    vtkMath::Cross(tangent0, normal0, binormal0);
+    }
+
+  tangentsArray->SetTuple(pointId0, tangent0);
+  normalsArray->SetTuple(pointId0, normal0);
+  binormalsArray->SetTuple(pointId0, binormal0);
+
+
+
+
+
+  vtkIdType pointId2 = -1;
+  double tangent1[3] = { tangent0[0], tangent0[1], tangent0[2] };
+  for (int i = 1; i < numberOfPointsInCell - 1; i++)
+    {
+    vtkIdType pointId1 = polyLine->GetPointId(i);
+    pointId2 = polyLine->GetPointId(i+1);
+    double pointPosition1[3];
+    double pointPosition2[3];
+    input->GetPoint(pointId1, pointPosition1);
+    input->GetPoint(pointId2, pointPosition2);
+
+    tangent1[0] = pointPosition2[0] - pointPosition1[0];
+    tangent1[1] = pointPosition2[1] - pointPosition1[1];
+    tangent1[2] = pointPosition2[2] - pointPosition1[2];
+
+    vtkMath::Normalize(tangent1);
+    
+    tangentsArray->SetTuple(pointId1, tangent1);
+
+    // Save current data for next iteration
+    tangent0[0] = tangent1[0];
+    tangent0[1] = tangent1[1];
+    tangent0[2] = tangent1[2];
+    }
+
+  if (pointId2 >= 0)
+    tangentsArray->SetTuple(pointId2, tangent1);
+
+
+
+  vtkIdType pointIdi = -1;
+  vtkIdType pointIdip1 = -1;
+  double ri[3] = {normal0[0],normal0[1],normal0[2]};
+  for (int i = 0; i < numberOfPointsInCell - 1; i++)
+    {
+    pointIdi = polyLine->GetPointId(i);
+    pointIdip1 = polyLine->GetPointId(i+1);
+    // Get positions
+    double xi[3];
+    double xip1[3];
+    input->GetPoint(pointIdi, xi);
+    input->GetPoint(pointIdip1, xip1);
+    // Get tangent vectors
+    double ti[3];
+    double tip1[3];
+    tangentsArray->GetTuple(pointIdi, ti);
+    tangentsArray->GetTuple(pointIdip1, tip1);
+
+    // Compute reflection vector of R1
+    double v1[3], v1_[3] = {0,0,0};
+    v1[0] = v1_[0] = xip1[0] - xi[0];
+    v1[1] = v1_[1] = xip1[1] - xi[1];
+    v1[2] = v1_[2] = xip1[2] - xi[2];
+    double c1 = 0;
+    c1 = vtkMath::Dot(v1,v1);
+
+    // Compute rLi = R1*ri
+    double v1ri = 0;
+    v1ri = vtkMath::Dot(v1,ri);
+    vtkMath::MultiplyScalar(v1,v1ri);
+    vtkMath::MultiplyScalar(v1,-2/c1);
+    double rLi[3] = {0,0,0};
+    vtkMath::Add(ri,v1,rLi);
+
+    // Compute tLi = R1*ti
+    double v1ti = 0;
+    v1ti = vtkMath::Dot(v1_,ti);
+    vtkMath::MultiplyScalar(v1_,v1ti);
+    vtkMath::MultiplyScalar(v1_,-2/c1);
+    double tLi[3] = {0,0,0};
+    vtkMath::Add(ti,v1_,tLi);
+
+    // Compute reflection vector of R2
+    double v2[3] = {0,0,0};
+    vtkMath::Subtract(tip1,tLi,v2);
+
+    double c2 = 0;
+    c2 = vtkMath::Dot(v2,v2);
+
+    // Compute rip1 = R2*rLi (normal vector)
+    double v2rLi = 0;
+    v2rLi = vtkMath::Dot(v2,rLi);
+    vtkMath::MultiplyScalar(v2,v2rLi);
+    vtkMath::MultiplyScalar(v2,-2/c2);
+    double rip1[3] = {0,0,0};
+    vtkMath::Add(rLi,v2,rip1);
+    vtkMath::Normalize(rip1);
+
+    // Compute vector sip1 of the frame i+1 (binormal vector)
+    double sip1[3] = {0,0,0};
+    vtkMath::Cross(tip1,rip1,sip1);
+    vtkMath::Normalize(sip1);
+
+    //tangentsArray->SetTuple(pointIdip1, tip1);
+    normalsArray->SetTuple(pointIdip1, rip1);
+    binormalsArray->SetTuple(pointIdip1, sip1);
     }
 }
 

@@ -26,7 +26,7 @@
 ///
 /// References:
 /// - Parallel transport theory: R. Bishop, "There is more than one way to frame a curve",
-///   American Mathematical Monthly, vol. 82, no. 3, pp. 246–251, 1975
+///   American Mathematical Monthly, vol. 82, no. 3, pp. 246ï¿½251, 1975
 /// - Parallel transport implementation: Piccinelli M, Veneziani A, Steinman DA, Remuzzi A, Antiga L.
 ///   "A framework for geometric analysis of vascular structures: application to cerebral aneurysms.",
 ///   IEEE Trans Med Imaging. 2009 Aug;28(8):1141-55. doi: 10.1109/TMI.2009.2021652.
@@ -95,6 +95,7 @@ protected:
   int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
 
   void ComputeAxisDirections(vtkPolyData* input, vtkIdType cellIndex, vtkDoubleArray* tangentsArray, vtkDoubleArray* normalsArray, vtkDoubleArray* binormalsArray);
+  void ComputeAxisDirections2(vtkPolyData* input, vtkIdType cellIndex, vtkDoubleArray* tangentsArray, vtkDoubleArray* normalsArray, vtkDoubleArray* binormalsArray);
 
   /// Rotate a vector around an axis
   static void RotateVector(double* inVector, double* outVector, const double* axis, double angle);
