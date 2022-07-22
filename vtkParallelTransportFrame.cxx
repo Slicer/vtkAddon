@@ -36,6 +36,7 @@ vtkParallelTransportFrame::vtkParallelTransportFrame()
   this->SetTangentsArrayName("Tangents");
   this->SetNormalsArrayName("Normals");
   this->SetBinormalsArrayName("Binormals");
+  this->SetRotationMinimizingFrames(false);
 }
 
 //----------------------------------------------------------------------------
@@ -119,7 +120,10 @@ int vtkParallelTransportFrame::RequestData(
   int numberOfCells = input->GetNumberOfCells();
   for (int cellIndex = 0; cellIndex < numberOfCells; cellIndex++)
     {
-    this->ComputeAxisDirections2(input, cellIndex, tangentsArray, normalsArray, binormalsArray);
+    if (this->RotationMinimizingFrames)
+        this->ComputeAxisDirections2(input, cellIndex, tangentsArray, normalsArray, binormalsArray);
+    else
+        this->ComputeAxisDirections(input, cellIndex, tangentsArray, normalsArray, binormalsArray);
     }
 
   output->GetPointData()->AddArray(tangentsArray);

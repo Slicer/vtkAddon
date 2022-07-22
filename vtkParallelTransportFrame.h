@@ -70,6 +70,13 @@ public:
   vtkGetStringMacro(BinormalsArrayName);
   ///@} 
 
+  ///@{
+  /// Use rotation minimizing frames, otherwise use Bishop frames
+  /// By default is False
+  vtkSetMacro(RotationMinimizingFrames, vtkTypeBool);
+  vtkGetMacro(RotationMinimizingFrames, vtkTypeBool);
+  ///@} 
+
   /// Define the preferred direction of the normal vector at the first point of the curve.
   /// It is just "preferred" because the direction has to be orhogonal to the tangent,
   /// so in general the normal vector cannot point into exactly to a required direction.
@@ -107,6 +114,8 @@ private:
   char* TangentsArrayName = nullptr;
   char* NormalsArrayName = nullptr;
   char* BinormalsArrayName = nullptr;
+
+  vtkTypeBool RotationMinimizingFrames = false;
 
   /// Tolerance value used for checking that a value is non-zero.
   double Tolerance = 1e-6;
