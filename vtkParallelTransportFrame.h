@@ -30,6 +30,8 @@
 /// - Parallel transport implementation: Piccinelli M, Veneziani A, Steinman DA, Remuzzi A, Antiga L.
 ///   "A framework for geometric analysis of vascular structures: application to cerebral aneurysms.",
 ///   IEEE Trans Med Imaging. 2009 Aug;28(8):1141-55. doi: 10.1109/TMI.2009.2021652.
+/// - Wang, W., J ̈uttler, B., Zheng, D., and Liu, Y. 2008. Computation of rotation minimizing frame. ACM Trans. Graph. 27, 1, Article 2 (March 2008), 18 pages.
+///   DOI = 10.1145/1330511.1330513 http://doi.acm.org/10.1145/1330511.1330513
 /// 
 /// The initial implementation was based on VMTK (vtkvmtkCenterlineAttributesFilter) which was optimized
 /// and enhanced with more predictable initial normal vector direction. In the future, support for closed
