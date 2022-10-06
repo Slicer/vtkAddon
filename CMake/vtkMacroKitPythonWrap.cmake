@@ -116,7 +116,7 @@ macro(vtkMacroKitPythonWrap)
     endif()
   endforeach()
 
-  set(expected_nonempty_vars KIT_NAME KIT_INSTALL_BIN_DIR KIT_INSTALL_LIB_DIR)
+  set(expected_nonempty_vars KIT_NAME KIT_SRCS KIT_INSTALL_BIN_DIR KIT_INSTALL_LIB_DIR)
   foreach(var ${expected_nonempty_vars})
     if("${MY_${var}}" STREQUAL "")
       message(FATAL_ERROR "error: ${var} CMake variable is empty !")
