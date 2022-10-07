@@ -21,7 +21,6 @@
 #define __vtkOpenGLShaderComputation_h
 
 // VTK includes
-//#include "vtk_glew.h"
 #include "vtkAddon.h"
 #include "vtkImageData.h"
 #include "vtkRenderWindow.h"

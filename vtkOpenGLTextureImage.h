@@ -27,7 +27,6 @@
 #include "vtk_glew.h"
 
 #include "vtkOpenGLShaderComputation.h"
-#include "vtkOpenGL.h"
 
 #include "vtkImageData.h"
 
