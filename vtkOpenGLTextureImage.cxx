@@ -26,7 +26,6 @@
 #include "vtkPolyDataMapper.h"
 #include "vtkProperty.h"
 
-#include "vtkOpenGL.h"
 #include <math.h>
 
 //----------------------------------------------------------------------------
