@@ -88,42 +88,42 @@ endif()
 # Sources
 # --------------------------------------------------------------------------
 set(vtkAddon_SRCS
+  vtkAddonMathUtilities.cxx
+  vtkAddonMathUtilities.h
+  vtkAddonSetGet.h
   vtkAddonTestingUtilities.cxx
   vtkAddonTestingUtilities.h
   vtkAddonTestingUtilities.txx
   vtkErrorSink.cxx
   vtkErrorSink.h
   vtkLoggingMacros.h
-  vtkTestingOutputWindow.cxx
-  vtkTestingOutputWindow.h
   vtkOrientedBSplineTransform.cxx
   vtkOrientedBSplineTransform.h
   vtkOrientedGridTransform.cxx
   vtkOrientedGridTransform.h
-  vtkPersonInformation.cxx
-  vtkPersonInformation.h
-  vtkAddonMathUtilities.h
-  vtkAddonMathUtilities.cxx
-  vtkAddonSetGet.h
   vtkParallelTransportFrame.cxx
   vtkParallelTransportFrame.h
-  vtkStreamingVolumeCodec.cxx
-  vtkStreamingVolumeCodec.h
-  vtkStreamingVolumeFrame.cxx
-  vtkStreamingVolumeFrame.h
-  vtkStreamingVolumeCodecFactory.cxx
-  vtkStreamingVolumeCodecFactory.h
+  vtkPersonInformation.cxx
+  vtkPersonInformation.h
   vtkRawRGBVolumeCodec.cxx
   vtkRawRGBVolumeCodec.h
+  vtkStreamingVolumeCodec.cxx
+  vtkStreamingVolumeCodec.h
+  vtkStreamingVolumeCodecFactory.cxx
+  vtkStreamingVolumeCodecFactory.h
+  vtkStreamingVolumeFrame.cxx
+  vtkStreamingVolumeFrame.h
+  vtkTestingOutputWindow.cxx
+  vtkTestingOutputWindow.h
 )
 
 if(VTK_RENDERING_BACKEND STREQUAL "OpenGL2")
   set(vtkAddon_SRCS
     ${vtkAddon_SRCS}
-    vtkOpenGLTextureImage.cxx
-    vtkOpenGLTextureImage.h
     vtkOpenGLShaderComputation.cxx
     vtkOpenGLShaderComputation.h
+    vtkOpenGLTextureImage.cxx
+    vtkOpenGLTextureImage.h
   )
   find_package(OpenGL)
   set(vtkAddon_LIBS
@@ -141,9 +141,9 @@ endif()
 # Helper classes
 
 set_source_files_properties(
+  vtkAddonSetGet.h
   vtkAddonTestingUtilities.h
   vtkLoggingMacros.h 
-  vtkAddonSetGet.h
   WRAP_EXCLUDE
   )
 # --------------------------------------------------------------------------
