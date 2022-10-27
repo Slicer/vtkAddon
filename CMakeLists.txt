@@ -94,8 +94,12 @@ set(vtkAddon_SRCS
   vtkAddonTestingUtilities.cxx
   vtkAddonTestingUtilities.h
   vtkAddonTestingUtilities.txx
+  vtkCurveGenerator.cxx
+  vtkCurveGenerator.h
   vtkErrorSink.cxx
   vtkErrorSink.h
+  vtkLinearSpline.cxx
+  vtkLinearSpline.h
   vtkLoggingMacros.h
   vtkOrientedBSplineTransform.cxx
   vtkOrientedBSplineTransform.h
@@ -103,10 +107,14 @@ set(vtkAddon_SRCS
   vtkOrientedGridTransform.h
   vtkParallelTransportFrame.cxx
   vtkParallelTransportFrame.h
+  vtkParametricPolynomialApproximation.cxx
+  vtkParametricPolynomialApproximation.h
   vtkPersonInformation.cxx
   vtkPersonInformation.h
   vtkRawRGBVolumeCodec.cxx
   vtkRawRGBVolumeCodec.h
+  vtkSlicerDijkstraGraphGeodesicPath.cxx
+  vtkSlicerDijkstraGraphGeodesicPath.h
   vtkStreamingVolumeCodec.cxx
   vtkStreamingVolumeCodec.h
   vtkStreamingVolumeCodecFactory.cxx
