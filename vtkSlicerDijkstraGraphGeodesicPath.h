@@ -24,8 +24,7 @@
 // VTK includes
 #include <vtkDijkstraGraphGeodesicPath.h>
 
-// export
-#include "vtkAddonExport.h"
+#include "vtkAddon.h" // For export macro
 
 /// Filter that generates curves between points of an input polydata
 class VTK_ADDON_EXPORT vtkSlicerDijkstraGraphGeodesicPath : public vtkDijkstraGraphGeodesicPath

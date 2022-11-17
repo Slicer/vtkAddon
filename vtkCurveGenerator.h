@@ -33,8 +33,7 @@ class vtkDoubleArray;
 class vtkPoints;
 class vtkSpline;
 
-// export
-#include "vtkAddonExport.h"
+#include "vtkAddon.h" // For export macro
 
 /// Filter that generates curves between points of an input polydata
 class VTK_ADDON_EXPORT vtkCurveGenerator : public vtkPolyDataAlgorithm

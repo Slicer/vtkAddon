@@ -34,7 +34,7 @@ class vtkPoints;
 class vtkDoubleArray;
 class vtkTimeStamp;
 
-#include "vtkAddonExport.h" // For export macro
+#include "vtkAddon.h" // For export macro
 
 #include <vtkParametricFunction.h>
 #include <vtkSmartPointer.h>

@@ -32,7 +32,7 @@
 #ifndef vtkLinearSpline_h
 #define vtkLinearSpline_h
 
-#include "vtkAddonExport.h" // For export macro
+#include "vtkAddon.h" // For export macro
 
 #include <vtkSpline.h>
 
