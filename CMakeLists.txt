@@ -40,17 +40,8 @@ set(headers
   vtkLoggingMacros.h
 )
 
-set(configure_header_file vtkAddonConfigure.h)
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/${configure_header_file}.in
-  ${CMAKE_CURRENT_BINARY_DIR}/${configure_header_file}
-  @ONLY
-)
-list(APPEND headers
-  ${CMAKE_CURRENT_BINARY_DIR}/${configure_header_file}
-)
-
 vtk_module_add_module(VTK::Addon
+  EXPORT_MACRO_PREFIX VTK_ADDON
   CLASSES ${classes}
   SOURCES ${sources}
   HEADERS ${headers}

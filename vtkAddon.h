@@ -12,6 +12,6 @@
 
 #include <vtkVersion.h>
 
-#include "vtkAddonExport.h"
+#include "vtkAddonModule.h"
 
 #endif
