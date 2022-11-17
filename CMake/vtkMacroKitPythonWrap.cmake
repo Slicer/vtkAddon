@@ -228,8 +228,6 @@ macro(vtkMacroKitPythonWrap)
 
     VTK_WRAP_PYTHON3(${MY_KIT_NAME}Python KitPython_SRCS "${TMP_WRAP_FILES}")
 
-    include_directories("${PYTHON_INCLUDE_PATH}")
-
     if(${VTK_VERSION} VERSION_LESS "8.90")
 
     # Create a python module that can be loaded dynamically.  It links to
