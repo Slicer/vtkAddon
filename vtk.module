@@ -1,0 +1,22 @@
+NAME
+  VTK::Addon
+LIBRARY_NAME
+  vtkAddon
+LICENSE_FILES
+  LICENSE
+DEPENDS
+  VTK::CommonComputationalGeometry
+  VTK::CommonCore
+  VTK::CommonDataModel
+  VTK::CommonExecutionModel
+  VTK::FiltersHybrid
+  VTK::FiltersModeling
+  VTK::glew
+  VTK::RenderingCore
+  VTK::RenderingOpenGL2
+PRIVATE_DEPENDS
+  VTK::CommonMath
+  VTK::eigen
+DESCRIPTION
+  "This module contains general-purpose features that may be integrated into VTK library in the future."
+
