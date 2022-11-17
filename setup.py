@@ -155,16 +155,19 @@ elif sys.platform == "darwin":
         # NOTE: we haven"t actually succeeded in cross-compiling this module.
         cmake_args.append("-DCMAKE_SYSTEM_NAME=Darwin")
 
+long_description = (vtk_module_source_dir / "README.md").read_text(encoding="utf-8")
+
 setup(
     name="vtk-addon",
     description="General-purpose features that may be integrated into VTK library in the future.",
-    long_description="General-purpose features that may be integrated into VTK library in the future.",
-    url="",
-    author="Slicer developers",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/Slicer/vtkAddon",
+    author="Jean-Christophe Fillion-Robin",
+    email="jcfr@kitware.com",
     license="Slicer",
     classifiers=[
         "Development Status :: 4 - Beta",
-        "License :: Slicer License",
         "Programming Language :: Python :: 3",
         "Topic :: Scientific/Engineering :: Medical Science Apps.",
     ],
@@ -173,4 +176,8 @@ setup(
     package_dir={"vtkmodules": "lib/vtkmodules"},
     cmake_args=cmake_args,
     install_requires=["vtk==9.2.2"],
+    project_urls={  # Optional
+        "Bug Reports": "https://github.com/Slicer/vtkAddon/issues",
+        "Source": "https://github.com/Slicer/vtkAddon/",
+    },
 )
