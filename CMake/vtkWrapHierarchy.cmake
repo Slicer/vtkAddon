@@ -98,7 +98,7 @@ $<$<BOOL:$<TARGET_PROPERTY:${module_name},INCLUDE_DIRECTORIES>>:
 
       # add the info to the init file
       set(VTK_WRAPPER_INIT_DATA
-        "${VTK_WRAPPER_INIT_DATA}${TMP_INPUT};${_name}")
+        "${VTK_WRAPPER_INIT_DATA}${TMP_INPUT};${_name}Python")
 
       set(VTK_WRAPPER_INIT_DATA "${VTK_WRAPPER_INIT_DATA}\n")
 
