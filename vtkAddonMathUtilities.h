@@ -85,6 +85,9 @@ public:
 
   /// Compute transform that best transforms the XY plane to the best fit plane
   static bool FitPlaneToPoints(vtkPoints* points, vtkMatrix4x4* transformToBestFitPlane);
+  
+  /// Get the coordinates of a point along a line at an offset from p2.
+  static void GetPointAlongLine(double result[3], double p1[3], double p2[3], const double offset);
 
 protected:
   vtkAddonMathUtilities();

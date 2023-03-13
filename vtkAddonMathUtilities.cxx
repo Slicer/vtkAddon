@@ -388,3 +388,14 @@ bool vtkAddonMathUtilities::FitPlaneToPoints(vtkPoints* points, vtkMatrix4x4* tr
 
   return true;
 }
+
+//---------------------------------------------------------------------------
+void vtkAddonMathUtilities::GetPointAlongLine(double result[3], double p1[3], double p2[3], const double offset)
+{
+  double directionVector[3] = { p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2] };
+  vtkMath::Normalize(directionVector);
+  result[0] = p2[0] + (offset * directionVector[0]);
+  result[1] = p2[1] + (offset * directionVector[1]);
+  result[2] = p2[2] + (offset * directionVector[2]);
+}
+
