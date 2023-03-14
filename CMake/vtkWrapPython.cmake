@@ -28,13 +28,6 @@ macro(VTK_WRAP_PYTHON3 TARGET SRC_LIST_NAME SOURCES)
     endif()
   endif()
 
-  # Initialize the custom target counter.
-  if(VTK_WRAP_PYTHON_NEED_CUSTOM_TARGETS)
-    set(VTK_WRAP_PYTHON_CUSTOM_COUNT "")
-    set(VTK_WRAP_PYTHON_CUSTOM_NAME ${TARGET})
-    set(VTK_WRAP_PYTHON_CUSTOM_LIST)
-  endif()
-
   # start writing the input file for the init file
   set(VTK_WRAPPER_INIT_DATA "${TARGET}")
 
@@ -123,21 +116,6 @@ $<$<BOOL:$<TARGET_PROPERTY:${TARGET},INCLUDE_DIRECTORIES>>:
       COMMENT "Python Wrapping - generating ${TMP_FILENAME}Python.cxx"
       VERBATIM
       )
-
-    # Add this output to a custom target if needed.
-    if(VTK_WRAP_PYTHON_NEED_CUSTOM_TARGETS)
-      set(VTK_WRAP_PYTHON_CUSTOM_LIST ${VTK_WRAP_PYTHON_CUSTOM_LIST}
-        ${CMAKE_CURRENT_BINARY_DIR}/${TMP_FILENAME}Python.cxx)
-      set(VTK_WRAP_PYTHON_CUSTOM_COUNT ${VTK_WRAP_PYTHON_CUSTOM_COUNT}x)
-      if(VTK_WRAP_PYTHON_CUSTOM_COUNT MATCHES "^${VTK_WRAP_PYTHON_CUSTOM_LIMIT}$")
-        set(VTK_WRAP_PYTHON_CUSTOM_NAME ${VTK_WRAP_PYTHON_CUSTOM_NAME}Hack)
-        add_custom_target(${VTK_WRAP_PYTHON_CUSTOM_NAME}
-          DEPENDS ${VTK_WRAP_PYTHON_CUSTOM_LIST})
-        set(KIT_PYTHON_DEPS ${VTK_WRAP_PYTHON_CUSTOM_NAME})
-        set(VTK_WRAP_PYTHON_CUSTOM_LIST)
-        set(VTK_WRAP_PYTHON_CUSTOM_COUNT)
-      endif()
-    endif()
   endforeach()
 
   if(${VTK_VERSION} VERSION_GREATER_EQUAL "8.90")
