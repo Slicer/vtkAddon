@@ -59,6 +59,9 @@ endmacro()
 #!
 #!     # Single value arguments
 #!     KIT_NAME <name>
+#!     [KIT_RUNTIME_OUTPUT_DIRECTORY <dir>]
+#!     [KIT_LIBRARY_OUTPUT_DIRECTORY <dir>]
+#!     [KIT_ARCHIVE_OUTPUT_DIRECTORY <dir>]
 #!     KIT_INSTALL_BIN_DIR <dir>
 #!     KIT_INSTALL_LIB_DIR <dir>
 #!     [KIT_MODULE_INSTALL_BIN_DIR <dir>]
@@ -96,6 +99,9 @@ macro(vtkMacroKitPythonWrap)
   set(options)
   set(oneValueArgs
     KIT_NAME
+    KIT_RUNTIME_OUTPUT_DIRECTORY
+    KIT_LIBRARY_OUTPUT_DIRECTORY
+    KIT_ARCHIVE_OUTPUT_DIRECTORY
     KIT_INSTALL_BIN_DIR
     KIT_INSTALL_LIB_DIR
     KIT_MODULE_INSTALL_BIN_DIR
@@ -307,6 +313,18 @@ macro(vtkMacroKitPythonWrap)
       ${MY_KIT_NAME}PythonD
       )
 
+    # Set output directories for PythonD and Python libraries
+    foreach(type IN ITEMS RUNTIME LIBRARY ARCHIVE)
+      if(MY_KIT_${type}_OUTPUT_DIRECTORY)
+        set_target_properties(${MY_KIT_NAME}PythonD PROPERTIES
+          ${type}_OUTPUT_DIRECTORY "${MY_KIT_${type}_OUTPUT_DIRECTORY}"
+          )
+        set_target_properties(${MY_KIT_NAME}Python PROPERTIES
+          ${type}_OUTPUT_DIRECTORY "${MY_KIT_${type}_OUTPUT_DIRECTORY}"
+          )
+      endif()
+    endforeach()
+
     else()
 
     # Create a python module that can be loaded dynamically.
@@ -330,6 +348,15 @@ macro(vtkMacroKitPythonWrap)
         VTK::WrappingPythonCore
         VTK::Python
         )
+
+    # Set output directories
+    foreach(type IN ITEMS RUNTIME LIBRARY ARCHIVE)
+      if(MY_KIT_${type}_OUTPUT_DIRECTORY)
+        set_target_properties(${MY_KIT_NAME}Python PROPERTIES
+          ${type}_OUTPUT_DIRECTORY "${MY_KIT_${type}_OUTPUT_DIRECTORY}"
+          )
+      endif()
+    endforeach()
 
     endif()
 
