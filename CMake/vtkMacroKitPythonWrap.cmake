@@ -94,8 +94,19 @@ endmacro()
 #!
 macro(vtkMacroKitPythonWrap)
   set(options)
-  set(oneValueArgs KIT_NAME KIT_INSTALL_BIN_DIR KIT_INSTALL_LIB_DIR KIT_MODULE_INSTALL_BIN_DIR KIT_MODULE_INSTALL_LIB_DIR)
-  set(multiValueArgs KIT_SRCS KIT_PYTHON_EXTRA_SRCS KIT_WRAP_HEADERS KIT_PYTHON_LIBRARIES)
+  set(oneValueArgs
+    KIT_NAME
+    KIT_INSTALL_BIN_DIR
+    KIT_INSTALL_LIB_DIR
+    KIT_MODULE_INSTALL_BIN_DIR
+    KIT_MODULE_INSTALL_LIB_DIR
+    )
+  set(multiValueArgs
+    KIT_SRCS
+    KIT_PYTHON_EXTRA_SRCS
+    KIT_WRAP_HEADERS
+    KIT_PYTHON_LIBRARIES
+    )
   cmake_parse_arguments(MY "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   # Sanity checks
