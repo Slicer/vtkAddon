@@ -358,6 +358,32 @@ macro(vtkMacroKitPythonWrap)
       endif()
     endforeach()
 
+    get_target_property(_vtk_python_pyi_output_dir ${MY_KIT_NAME}Python RUNTIME_OUTPUT_DIRECTORY)
+    if(NOT _vtk_python_pyi_output_dir)
+      set(_vtk_python_pyi_output_dir ${CMAKE_CURRENT_BINARY_DIR})
+    endif()
+
+    set(_vtk_python_target "${MY_KIT_NAME}Python")
+    set(_vtk_python_module "${MY_KIT_NAME}Python")
+    set(_vtk_python_pyi_file ${_vtk_python_pyi_output_dir}/${_vtk_python_module}.pyi)
+
+    add_custom_command(
+      OUTPUT    ${_vtk_python_pyi_file}
+      COMMAND   "${PYTHON_EXECUTABLE}"
+                -m vtkmodules.generate_pyi
+                --without-package
+                --include-docstrings
+                -o ${_vtk_python_pyi_output_dir}
+                "${_vtk_python_module}"
+      WORKING_DIRECTORY
+                ${_vtk_python_pyi_output_dir}
+      DEPENDS   ${_vtk_python_target}
+      COMMENT   "Creating .pyi files for ${_vtk_python_target}"
+      )
+    add_custom_target("${_vtk_python_target}_pyi" ALL
+      DEPENDS ${_vtk_python_pyi_file}
+      )
+
     endif()
 
     # Python extension modules on Windows must have the extension ".pyd"
