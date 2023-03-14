@@ -113,7 +113,7 @@ $<$<BOOL:$<TARGET_PROPERTY:${TARGET},INCLUDE_DIRECTORIES>>:
               @${_args_file}
               -o ${CMAKE_CURRENT_BINARY_DIR}/${TMP_FILENAME}Python.cxx
               ${TMP_INPUT}
-      COMMENT "Python Wrapping - generating ${TMP_FILENAME}Python.cxx"
+      COMMENT "Generating Python wrapper sources for ${TMP_FILENAME}"
       VERBATIM
       )
   endforeach()
@@ -168,7 +168,7 @@ $<$<BOOL:$<TARGET_PROPERTY:${TARGET},INCLUDE_DIRECTORIES>>:
             ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}Init.data
             ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}Init.cxx
             ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}InitImpl.cxx
-    COMMENT "Python Wrapping - generating ${TARGET}Init.cxx"
+    COMMENT "Generating the Python module initialization sources for ${TARGET}"
     VERBATIM
     )
 
