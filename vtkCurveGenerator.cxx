@@ -932,7 +932,11 @@ void vtkCurveGenerator::SortByMinimumSpanningTreePosition(vtkPoints* points, vtk
       }
 
     // Add the picked vertex to the MST Set
-    mstSet[nextPointIndex] = true;
+    if (nextPointIndex >= 0 && nextPointIndex < numberOfPoints)
++     {
++      // Add the picked vertex to the MST Set
++      mstSet[nextPointIndex] = true;
++     }
 
     // Update key value and parent index of the adjacent vertices of
     // the picked vertex. Consider only those vertices which are not yet
