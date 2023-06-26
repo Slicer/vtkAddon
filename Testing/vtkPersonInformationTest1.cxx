@@ -60,8 +60,8 @@ int vtkPersonInformationTest1(int vtkNotUsed(argc), char* vtkNotUsed(argv)[])
   vtkNew<vtkStringArray> keys;
   userInformation->GetKeys(keys.GetPointer());
   CHECK_INT(keys->GetNumberOfValues(), 6);
-  CHECK_STRING(keys->GetValue(0), "Email");
-  CHECK_STRING(keys->GetValue(5), "ProcedureRole");
+  CHECK_STRING(keys->GetValue(0).c_str(), "Email");
+  CHECK_STRING(keys->GetValue(5).c_str(), "ProcedureRole");
 
   // Test key delete
   CHECK_BOOL(userInformation->SetName(""), true);
@@ -73,8 +73,8 @@ int vtkPersonInformationTest1(int vtkNotUsed(argc), char* vtkNotUsed(argv)[])
   CHECK_STD_STRING(userInformation->GetAsString(), outputAfterNameDelete);
   userInformation->GetKeys(keys.GetPointer());
   CHECK_INT(keys->GetNumberOfValues(), 5);
-  CHECK_STRING(keys->GetValue(0), "Email");
-  CHECK_STRING(keys->GetValue(4), "ProcedureRole");
+  CHECK_STRING(keys->GetValue(0).c_str(), "Email");
+  CHECK_STRING(keys->GetValue(4).c_str(), "ProcedureRole");
 
   // Test all key delete
   CHECK_BOOL(userInformation->SetLogin(""), true);
