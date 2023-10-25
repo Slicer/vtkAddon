@@ -98,6 +98,8 @@ set(vtkAddon_SRCS
   vtkCurveGenerator.h
   vtkErrorSink.cxx
   vtkErrorSink.h
+  vtkImageLabelDilate3D.cxx
+  vtkImageLabelDilate3D.h
   vtkLinearSpline.cxx
   vtkLinearSpline.h
   vtkLoggingMacros.h
@@ -151,7 +153,7 @@ endif()
 set_source_files_properties(
   vtkAddonSetGet.h
   vtkAddonTestingUtilities.h
-  vtkLoggingMacros.h 
+  vtkLoggingMacros.h
   WRAP_EXCLUDE
   )
 # --------------------------------------------------------------------------
