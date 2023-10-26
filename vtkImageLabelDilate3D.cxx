@@ -12,6 +12,9 @@
 #include "vtkPointData.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
 
+#include <map>
+#include <vector>
+
 vtkStandardNewMacro(vtkImageLabelDilate3D);
 
 //------------------------------------------------------------------------------
