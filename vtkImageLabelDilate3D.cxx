@@ -73,13 +73,13 @@ namespace
 
 //------------------------------------------------------------------------------
 // Compute the most frequently occurring number in the vector
-template <class T>
+template <typename T>
 T vtkComputeModeOfArray(const std::vector<T>& values) {
   // A map to store the count of each value
   std::map<T, int> valueCount;
   T maxValue = 0; // the most frequent value found so far
   int maxCount = 0; // how many of this value are found so far
-  std::vector<T>::size_type countForMajority = std::vector<T>::size_type(values.size()/2); // more than this count means majority
+  typename std::vector<T>::size_type countForMajority = typename std::vector<T>::size_type(values.size() / 2); // more than this count means majority
   for (T value : values)
     {
     int count = ++valueCount[value];
@@ -102,7 +102,7 @@ T vtkComputeModeOfArray(const std::vector<T>& values) {
 //------------------------------------------------------------------------------
 // This method contains the second switch statement that calls the correct
 // templated function for the mask types.
-template <class T>
+template <typename T>
 void vtkImageLabelDilate3DExecute(vtkImageLabelDilate3D* self, vtkImageData* inData, T* inPtr,
   vtkImageData* outData, T* outPtr, int outExt[6], int id, vtkDataArray* inArray)
 {
