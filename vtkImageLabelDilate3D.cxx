@@ -78,11 +78,11 @@ T vtkComputeModeOfArray(const std::vector<T>& values) {
   // A map to store the count of each value
   std::map<T, int> valueCount;
   T maxValue = 0; // the most frequent value found so far
-  int maxCount = 0; // how many of this value are found so far
+  std::size_t maxCount = 0; // how many of this value are found so far
   typename std::vector<T>::size_type countForMajority = typename std::vector<T>::size_type(values.size() / 2); // more than this count means majority
   for (T value : values)
     {
-    int count = ++valueCount[value];
+    std::size_t count = ++valueCount[value];
     if (count > maxCount)
       {
       maxValue = value;
