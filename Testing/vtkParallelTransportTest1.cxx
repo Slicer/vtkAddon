@@ -104,6 +104,8 @@ int vtkParallelTransportTest1(int vtkNotUsed(argc), char* vtkNotUsed(argv)[])
       normalsArray->GetTypedTuple(tupleIndex, normal);
       double binormal[3] = { 0.0, 0.0, 0.0 };
       binormalsArray->GetTypedTuple(tupleIndex, binormal);
+      double tangents[3] = { 0.0, 0.0, 0.0 };
+      tangentsArray->GetTypedTuple(tupleIndex, tangents);
 
       double pointPosition[3];
       points->GetPoint(tupleIndex, pointPosition);
@@ -115,6 +117,7 @@ int vtkParallelTransportTest1(int vtkNotUsed(argc), char* vtkNotUsed(argv)[])
         std::cout << "Circle point [" << tupleIndex << "]" << std::endl;
         std::cout << "  normal: " << normal[0] << ", " << normal[1] << ", " << normal[2] << std::endl;
         std::cout << "  binormal: " << binormal[0] << ", " << binormal[1] << ", " << binormal[2] << std::endl;
+        std::cout << "  tangents: " << tangents[0] << ", " << tangents[1] << ", " << tangents[2] << std::endl;
         std::cout << "  radial: " << radialDirection[0] << ", " << radialDirection[1] << ", " << radialDirection[2] << std::endl;
         }
 
