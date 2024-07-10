@@ -115,6 +115,7 @@ set(vtkAddon_SRCS
   vtkPersonInformation.h
   vtkRawRGBVolumeCodec.cxx
   vtkRawRGBVolumeCodec.h
+  vtkSingleton.h
   vtkSlicerDijkstraGraphGeodesicPath.cxx
   vtkSlicerDijkstraGraphGeodesicPath.h
   vtkStreamingVolumeCodec.cxx
