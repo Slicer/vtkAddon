@@ -2,6 +2,7 @@ set(KIT vtkAddon)
 
 create_test_sourcelist(Tests ${KIT}CxxTests.cxx
   vtkAddonMathUtilitiesTest1.cxx
+  vtkAddonSingletonTest1.cxx
   vtkAddonTestingUtilitiesTest1.cxx
   vtkLoggingMacrosTest1.cxx
   vtkParallelTransportTest1.cxx
@@ -10,8 +11,11 @@ create_test_sourcelist(Tests ${KIT}CxxTests.cxx
 
 set(LIBRARY_NAME ${PROJECT_NAME})
 
+add_library(vtkAddonMySingletonTest STATIC vtkMySingletonClass.cxx)
+target_link_libraries(vtkAddonMySingletonTest ${lib_name})
+
 vtkaddon_add_executable(${KIT}CxxTests ${Tests})
-target_link_libraries(${KIT}CxxTests ${lib_name})
+target_link_libraries(${KIT}CxxTests ${lib_name} vtkAddonMySingletonTest)
 
 set_target_properties(${KIT}CxxTests PROPERTIES FOLDER ${${PROJECT_NAME}_FOLDER})
 
@@ -21,6 +25,7 @@ function(vtkaddon_add_test testname)
 endfunction()
 
 vtkaddon_add_test( vtkAddonMathUtilitiesTest1 )
+vtkaddon_add_test( vtkAddonSingletonTest1 )
 vtkaddon_add_test( vtkAddonTestingUtilitiesTest1 )
 vtkaddon_add_test( vtkLoggingMacrosTest1 )
 vtkaddon_add_test( vtkPersonInformationTest1 )
