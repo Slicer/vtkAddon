@@ -21,7 +21,7 @@
 // vtkAddon includes
 #include <vtkSingleton.h>
 
-/// \brief Singleton VTK object containing a single integer.
+/// \brief Simple example VTK singleton class that stores an integer.
 class vtkMySingletonClass : public vtkObject
 {
 public:
@@ -42,4 +42,4 @@ protected:
   VTK_SINGLETON_DECLARE(vtkMySingletonClass);
 };
 
-VTK_SINGLETON_DECLARE_INITIALIZER(, vtkMySingletonClass);
+VTK_SINGLETON_DECLARE_INITIALIZER(/*add VTK_..._EXPORT directive here if the singleton is accessible outside the library*/, vtkMySingletonClass);
