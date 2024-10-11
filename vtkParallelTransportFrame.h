@@ -26,10 +26,12 @@
 ///
 /// References:
 /// - Parallel transport theory: R. Bishop, "There is more than one way to frame a curve",
-///   American Mathematical Monthly, vol. 82, no. 3, pp. 246–251, 1975
+///   American Mathematical Monthly, vol. 82, no. 3, pp. 246ï¿½251, 1975
 /// - Parallel transport implementation: Piccinelli M, Veneziani A, Steinman DA, Remuzzi A, Antiga L.
 ///   "A framework for geometric analysis of vascular structures: application to cerebral aneurysms.",
 ///   IEEE Trans Med Imaging. 2009 Aug;28(8):1141-55. doi: 10.1109/TMI.2009.2021652.
+/// - Wang, W., J Ìˆuttler, B., Zheng, D., and Liu, Y. 2008. Computation of rotation minimizing frame. ACM Trans. Graph. 27, 1, Article 2 (March 2008), 18 pages.
+///   DOI = 10.1145/1330511.1330513 http://doi.acm.org/10.1145/1330511.1330513
 /// 
 /// The initial implementation was based on VMTK (vtkvmtkCenterlineAttributesFilter) which was optimized
 /// and enhanced with more predictable initial normal vector direction. In the future, support for closed
@@ -70,6 +72,13 @@ public:
   vtkGetStringMacro(BinormalsArrayName);
   ///@} 
 
+  ///@{
+  /// Use rotation minimizing frames, otherwise use Bishop frames
+  /// By default is False
+  vtkSetMacro(RotationMinimizingFrames, vtkTypeBool);
+  vtkGetMacro(RotationMinimizingFrames, vtkTypeBool);
+  ///@} 
+
   /// Define the preferred direction of the normal vector at the first point of the curve.
   /// It is just "preferred" because the direction has to be orhogonal to the tangent,
   /// so in general the normal vector cannot point into exactly to a required direction.
@@ -95,6 +104,7 @@ protected:
   int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
 
   void ComputeAxisDirections(vtkPolyData* input, vtkIdType cellIndex, vtkDoubleArray* tangentsArray, vtkDoubleArray* normalsArray, vtkDoubleArray* binormalsArray);
+  void ComputeAxisDirections2(vtkPolyData* input, vtkIdType cellIndex, vtkDoubleArray* tangentsArray, vtkDoubleArray* normalsArray, vtkDoubleArray* binormalsArray);
 
   /// Rotate a vector around an axis
   static void RotateVector(double* inVector, double* outVector, const double* axis, double angle);
@@ -106,6 +116,8 @@ private:
   char* TangentsArrayName = nullptr;
   char* NormalsArrayName = nullptr;
   char* BinormalsArrayName = nullptr;
+
+  vtkTypeBool RotationMinimizingFrames = false;
 
   /// Tolerance value used for checking that a value is non-zero.
   double Tolerance = 1e-6;
