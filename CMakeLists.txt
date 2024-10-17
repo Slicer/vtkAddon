@@ -94,12 +94,18 @@ set(vtkAddon_SRCS
   vtkAddonTestingUtilities.cxx
   vtkAddonTestingUtilities.h
   vtkAddonTestingUtilities.txx
+  vtkCapPolyData.cxx
+  vtkCapPolyData.h
   vtkCurveGenerator.cxx
   vtkCurveGenerator.h
   vtkErrorSink.cxx
   vtkErrorSink.h
   vtkImageLabelDilate3D.cxx
   vtkImageLabelDilate3D.h
+  vtkImageMathematicsAddon.cxx
+  vtkImageMathematicsAddon.h
+  vtkImplicitInvertableBoolean.cxx
+  vtkImplicitInvertableBoolean.h
   vtkLinearSpline.cxx
   vtkLinearSpline.h
   vtkLoggingMacros.h
