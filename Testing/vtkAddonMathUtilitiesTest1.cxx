@@ -107,6 +107,12 @@ int AreMatrixEqual_Test(int size_m1, int size_m2)
   m1->SetElement(0, 0 , -5e-3);
   CHECK_BOOL( vtkAddonMathUtilities::MatrixAreEqual(m1.GetPointer(), m2.GetPointer(), tolerance), false);
 
+  // Test that exact equality can be verified when setting tolerance to 0.0
+  tolerance = 0.0;
+  m1->Identity();
+  m2->Identity();
+  CHECK_BOOL( vtkAddonMathUtilities::MatrixAreEqual(m1.GetPointer(), m2.GetPointer(), tolerance), true);
+
   return EXIT_SUCCESS;
 }
 
