@@ -25,10 +25,15 @@
 #include "vtkPolyData.h"
 #include "vtkPolyDataMapper.h"
 #include "vtkProperty.h"
+#include "vtkVersionMacros.h" // For VTK_VERSION_NUMBER, VTK_VERSION_CHECK
 
 #include <math.h>
 
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 4, 0)
+#include "vtk_glad.h"
+#else
 #include "vtk_glew.h"
+#endif
 
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkOpenGLTextureImage);

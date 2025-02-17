@@ -15,7 +15,12 @@
 #include "vtkOpenGLShaderComputation.h"
 
 // VTK includes
+#include "vtkVersionMacros.h" // For VTK_VERSION_NUMBER, VTK_VERSION_CHECK
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 4, 0)
+#include "vtk_glad.h"
+#else
 #include "vtk_glew.h"
+#endif
 #include "vtkDataArray.h"
 #include "vtkImageData.h"
 #include "vtkObjectFactory.h"
