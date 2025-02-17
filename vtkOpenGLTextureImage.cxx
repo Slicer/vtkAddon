@@ -25,8 +25,15 @@
 #include "vtkPolyData.h"
 #include "vtkPolyDataMapper.h"
 #include "vtkProperty.h"
+#include "vtkVersionMacros.h" // For VTK_VERSION_NUMBER, VTK_VERSION_CHECK
 
 #include <math.h>
+
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 4, 0)
+#include "vtk_glad.h"
+#else
+#include "vtk_glew.h"
+#endif
 
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkOpenGLTextureImage);
@@ -50,8 +57,8 @@ vtkOpenGLTextureImage::~vtkOpenGLTextureImage()
 }
 
 //----------------------------------------------------------------------------
-// adapted from Rendering/OpenGL2/vtkTextureObject.cxx
-GLenum vtkOpenGLTextureImage::vtkScalarTypeToGLType(int vtk_scalar_type)
+// adapted from Rendering/OpenGL2/vtkTextureObject.cxx (vtkTextureObject::GetDefaultDataType)
+vtkTypeUInt32 vtkOpenGLTextureImage::vtkScalarTypeToGLType(int vtk_scalar_type)
 {
   // DON'T DEAL with VTK_CHAR as this is platform dependent.
   switch (vtk_scalar_type)
