@@ -588,7 +588,7 @@ void vtkOpenGLShaderComputation::ReadResult()
     return;
     }
 
-  GLuint scalarType = vtkOpenGLTextureImage::vtkScalarTypeToGLType(this->ResultImageData->GetScalarType());
+  vtkTypeUInt32 scalarType = vtkOpenGLTextureImage::vtkScalarTypeToGLType(this->ResultImageData->GetScalarType());
   glReadPixels(0, 0, resultDimensions[0], resultDimensions[1], format, scalarType, resultPixels);
   pointData->Modified();
 

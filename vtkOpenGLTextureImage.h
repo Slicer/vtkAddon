@@ -24,35 +24,11 @@
 #ifndef __vtkOpenGLTextureImage_h
 #define __vtkOpenGLTextureImage_h
 
-#include "vtk_glew.h"
-
 #include "vtkOpenGLShaderComputation.h"
 
 #include "vtkImageData.h"
 
 #include "vtkAddon.h"
-
-
-/*
-#ifndef _WIN32
-
-#include "vtkgl.h"
-
-#define glBindTexture vtkgl::BindTexture
-#define glClear vtkgl::Clear
-#define glClearColor vtkgl::ClearColor
-#define glDeleteTextures vtkgl::DeleteTextures
-#define glDisable vtkgl::Disable
-#define glDrawArrays vtkgl::DrawArrays
-#define glEnable vtkgl::Enable
-#define glGenTextures vtkgl::GenTextures
-#define glGetTexImage vtkgl::GetTexImage
-#define glReadPixels vtkgl::ReadPixels
-#define glTexParameteri vtkgl::TexParameteri
-#define glViewport vtkgl::Viewport
-
-#endif
-*/
 
 class VTK_ADDON_EXPORT vtkOpenGLTextureImage : public vtkObject
 {
@@ -146,7 +122,7 @@ public:
   // is the right size for the data).
   void ReadBack();
 
-  static GLenum vtkScalarTypeToGLType(int vtk_scalar_type);
+  static vtkTypeUInt32 vtkScalarTypeToGLType(int vtk_scalar_type);
   // Description:
   // TODO: options for min and mag filter, wrapping...
 
