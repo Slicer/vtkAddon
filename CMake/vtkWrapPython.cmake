@@ -159,21 +159,26 @@ $<$<BOOL:$<TARGET_PROPERTY:${TARGET},INCLUDE_DIRECTORIES>>:
     @ONLY
     )
 
+  set(_init_impl_src "")
+  if(${VTK_VERSION} VERSION_LESS "9.5.0")
+    set(_init_impl_src "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}InitImpl.cxx")
+  endif()
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}Init.cxx
-           ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}InitImpl.cxx
+           ${_init_impl_src}
     DEPENDS ${VTK_WRAP_PYTHON_INIT_EXE}
             ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}Init.data
     COMMAND ${VTK_WRAP_PYTHON_INIT_EXE}
             ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}Init.data
             ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}Init.cxx
-            ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}InitImpl.cxx
+            ${_init_impl_src}
     COMMENT "Generating the Python module initialization sources for ${TARGET}"
     VERBATIM
     )
-
-  # Create the Init File
-  set(${SRC_LIST_NAME} ${${SRC_LIST_NAME}} ${TARGET}InitImpl.cxx)
+  if(${VTK_VERSION} VERSION_LESS "9.5.0")
+    # Create the Init File
+    set(${SRC_LIST_NAME} ${${SRC_LIST_NAME}} ${TARGET}InitImpl.cxx)
+  endif()
 
 endmacro()
 
