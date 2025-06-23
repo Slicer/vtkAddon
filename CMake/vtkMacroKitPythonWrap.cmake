@@ -160,7 +160,7 @@ macro(vtkMacroKitPythonWrap)
 
   if(VTK_WRAP_PYTHON AND BUILD_SHARED_LIBS)
 
-    # Tell vtkWrapPython.cmake to set VTK_PYTHON_LIBRARIES for us.
+    # Tell vtkWrapPython.cmake to set VTK_Python3_LIBRARIES for us.
     set(VTK_WRAP_PYTHON_FIND_LIBS 1)
     include(vtkWrapPython)
 
@@ -283,7 +283,7 @@ macro(vtkMacroKitPythonWrap)
       ${MY_KIT_NAME}PythonD
       ${MY_KIT_NAME}
       ${VTK_PYTHON_CORE}
-      ${VTK_PYTHON_LIBRARIES}
+      ${VTK_Python3_LIBRARIES}
       ${VTK_KIT_PYTHON_LIBRARIES}
       ${MY_KIT_PYTHON_LIBRARIES}
       )
@@ -344,7 +344,7 @@ macro(vtkMacroKitPythonWrap)
     target_link_libraries(${MY_KIT_NAME}Python
       PRIVATE
         ${MY_KIT_NAME}
-        ${VTK_PYTHON_LIBRARIES}
+        ${VTK_Python3_LIBRARIES}
         VTK::WrappingPythonCore
         VTK::Python
         )
