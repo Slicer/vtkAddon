@@ -35,7 +35,6 @@ int vtkParallelTransportTest1(int vtkNotUsed(argc), char* vtkNotUsed(argv)[])
 
   // Test computation with a straight line input (zero curvature)
 
-  double lineDirection[3] = { 0.0, 0.0, 1.0 };
   vtkNew<vtkLineSource> line;
   line->SetPoint1(10,20,30);
   line->SetPoint1(30,70,-80);
@@ -97,7 +96,6 @@ int vtkParallelTransportTest1(int vtkNotUsed(argc), char* vtkNotUsed(argv)[])
     vtkPointData* pointData = parallelTransportFrame->GetOutput()->GetPointData();
     vtkDoubleArray* normalsArray = vtkDoubleArray::SafeDownCast(pointData->GetArray("Normals"));
     vtkDoubleArray* binormalsArray = vtkDoubleArray::SafeDownCast(pointData->GetArray("Binormals"));
-    vtkDoubleArray* tangentsArray = vtkDoubleArray::SafeDownCast(pointData->GetArray("Tangents"));
     double constantBinormal[3] = { 0.0, 0.0, 0.0 };
     binormalsArray->GetTypedTuple(0, constantBinormal);
     for (vtkIdType tupleIndex = 1; tupleIndex < normalsArray->GetNumberOfTuples(); tupleIndex++)
