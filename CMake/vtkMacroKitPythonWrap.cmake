@@ -160,8 +160,10 @@ macro(vtkMacroKitPythonWrap)
 
   if(VTK_WRAP_PYTHON AND BUILD_SHARED_LIBS)
 
+    if (${VTK_VERSION} VERSION_LESS "8.90")
     # Tell vtkWrapPython.cmake to set VTK_PYTHON_LIBRARIES for us.
     set(VTK_WRAP_PYTHON_FIND_LIBS 1)
+    endif()
     include(vtkWrapPython)
 
     set(TMP_WRAP_FILES ${MY_KIT_SRCS} ${MY_KIT_WRAP_HEADERS})
@@ -344,7 +346,6 @@ macro(vtkMacroKitPythonWrap)
     target_link_libraries(${MY_KIT_NAME}Python
       PRIVATE
         ${MY_KIT_NAME}
-        ${VTK_PYTHON_LIBRARIES}
         VTK::WrappingPythonCore
         VTK::Python
         )
