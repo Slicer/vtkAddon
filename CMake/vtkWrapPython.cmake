@@ -1,3 +1,7 @@
+#-----------------------------------------------------------------------------
+cmake_minimum_required(VERSION 3.12)
+#-----------------------------------------------------------------------------
+
 #
 # CMake implementation of the Wrap Python command.
 #
@@ -189,7 +193,7 @@ if(VTK_WRAP_PYTHON_FIND_LIBS)
   else()
     set(_QUIET_LIBRARY "REQUIRED")
   endif()
-  find_package(PythonLibs ${_QUIET_LIBRARY})
+  find_package(Python3 COMPONENTS Development ${_QUIET_LIBRARY})
 
   # Use separate debug/optimized libraries if they are different.
   if(PYTHON_DEBUG_LIBRARY)
