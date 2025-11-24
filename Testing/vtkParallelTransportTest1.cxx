@@ -96,6 +96,7 @@ int vtkParallelTransportTest1(int vtkNotUsed(argc), char* vtkNotUsed(argv)[])
     vtkPointData* pointData = parallelTransportFrame->GetOutput()->GetPointData();
     vtkDoubleArray* normalsArray = vtkDoubleArray::SafeDownCast(pointData->GetArray("Normals"));
     vtkDoubleArray* binormalsArray = vtkDoubleArray::SafeDownCast(pointData->GetArray("Binormals"));
+    vtkDoubleArray* tangentsArray = vtkDoubleArray::SafeDownCast(pointData->GetArray("Tangents"));
     double constantBinormal[3] = { 0.0, 0.0, 0.0 };
     binormalsArray->GetTypedTuple(0, constantBinormal);
     for (vtkIdType tupleIndex = 1; tupleIndex < normalsArray->GetNumberOfTuples(); tupleIndex++)
