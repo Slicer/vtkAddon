@@ -26,6 +26,9 @@
 #include <vtkNew.h>
 #include <vtkPointData.h>
 
+// STD includes
+#include <iostream>
+
 //----------------------------------------------------------------------------
 int vtkParallelTransportTest1(int vtkNotUsed(argc), char* vtkNotUsed(argv)[])
 {
@@ -87,7 +90,7 @@ int vtkParallelTransportTest1(int vtkNotUsed(argc), char* vtkNotUsed(argv)[])
   arc->GetOutput()->GetPoint(0, arcFirstPoint);
   double preferredNormalDirection[3] = { arcCenter[0] - arcFirstPoint[0], arcCenter[1] - arcFirstPoint[1], arcCenter[2] - arcFirstPoint[2] };
   parallelTransportFrame->SetPreferredInitialNormalVector(preferredNormalDirection);
-  
+
   parallelTransportFrame->SetInputConnection(arc->GetOutputPort());
   parallelTransportFrame->Update();
 

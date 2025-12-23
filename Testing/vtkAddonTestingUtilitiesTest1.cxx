@@ -21,6 +21,9 @@
 // vtkAddon includes
 #include "vtkAddonTestingUtilities.h"
 
+// STD includes
+#include <iostream>
+
 using namespace vtkAddonTestingUtilities;
 
 //----------------------------------------------------------------------------

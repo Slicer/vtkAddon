@@ -22,6 +22,9 @@
 #include "vtkOutputWindow.h"
 #include "vtkLoggingMacros.h" // for vtkInfoWithoutObjectMacro
 
+// STD includes
+#include <iostream>
+
 /// \brief VTK message output window class for automated testing.
 ///
 /// This is a VTK output window class that is optimized to be used
@@ -51,7 +54,7 @@ public:
   /* Explicitly deleted functions belong in the public interface */
   vtkTestingOutputWindow(const vtkTestingOutputWindow&) = delete;
   void operator=(const vtkTestingOutputWindow&) = delete;
-  
+
   // Gets a pointer to the singleton testing output window instance.
   // If the current VTK output window is not vtkTestingOutputWindow type then
   // it changes the output window to that.
@@ -67,11 +70,11 @@ public:
 
   // Sets number of warning and error messages to zero
   virtual void ResetNumberOfLoggedMessages();
-  
+
   // Number of any logged messages
   vtkGetMacro(NumberOfLoggedMessages, int);
   vtkSetMacro(NumberOfLoggedMessages, int);
-  
+
   // Number of logged warning or generic warning messages
   vtkGetMacro(NumberOfLoggedWarningMessages, int);
   vtkSetMacro(NumberOfLoggedWarningMessages, int);
@@ -79,14 +82,14 @@ public:
   // Number of logged error messages
   vtkGetMacro(NumberOfLoggedErrorMessages, int);
   vtkSetMacro(NumberOfLoggedErrorMessages, int);
-  
+
   // Returns the sum of warning and error messages logged
   int GetNumberOfLoggedWarningErrorMessages();
-  
+
 protected:
-  vtkTestingOutputWindow(); 
-  ~vtkTestingOutputWindow() override; 
-  
+  vtkTestingOutputWindow();
+  ~vtkTestingOutputWindow() override;
+
   int NumberOfLoggedWarningMessages{0};
   int NumberOfLoggedErrorMessages{0};
   int NumberOfLoggedMessages{0};
