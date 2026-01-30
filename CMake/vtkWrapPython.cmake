@@ -183,48 +183,7 @@ $<$<BOOL:$<TARGET_PROPERTY:${TARGET},INCLUDE_DIRECTORIES>>:
 endmacro()
 
 if(VTK_WRAP_PYTHON_FIND_LIBS)
-  get_filename_component(_CURRENT_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-  if (VTK_UNDEFINED_SYMBOLS_ALLOWED)
-    set(_QUIET_LIBRARY "QUIET")
-  else()
-    set(_QUIET_LIBRARY "REQUIRED")
-  endif()
-  find_package(Python3 COMPONENTS Development ${_QUIET_LIBRARY})
-
-  # Use separate debug/optimized libraries if they are different.
-  if(PYTHON_DEBUG_LIBRARY)
-    if("${PYTHON_DEBUG_LIBRARY}" STREQUAL "${PYTHON_LIBRARY}")
-      set(VTK_Python3_LIBRARIES ${PYTHON_LIBRARY})
-    else()
-      set(VTK_Python3_LIBRARIES
-        optimized ${PYTHON_LIBRARY}
-        debug ${PYTHON_DEBUG_LIBRARY})
-    endif()
-    set(VTK_WINDOWS_PYTHON_DEBUGGABLE 0)
-    if(WIN32)
-      if(PYTHON_DEBUG_LIBRARY MATCHES "_d")
-        set(VTK_WINDOWS_PYTHON_DEBUGGABLE 1)
-      endif()
-    endif()
-  else()
-    set(VTK_Python3_LIBRARIES ${PYTHON_LIBRARY})
-  endif()
-
-  # Some python installations on UNIX need to link to extra libraries
-  # such as zlib (-lz).  It is hard to automatically detect the needed
-  # libraries so instead just give the user an easy way to specify
-  # the libraries.  This should be needed only rarely.  It should
-  # also be moved to the CMake FindPython.cmake module at some point.
-  if(UNIX)
-    if(NOT DEFINED PYTHON_EXTRA_LIBS)
-      set(PYTHON_EXTRA_LIBS "" CACHE STRING
-        "Extra libraries to link when linking to python (such as \"z\" for zlib).  Separate multiple libraries with semicolons.")
-      mark_as_advanced(PYTHON_EXTRA_LIBS)
-    endif()
-  endif()
-
-  # Include any extra libraries for python.
-  set(VTK_Python3_LIBRARIES ${VTK_Python3_LIBRARIES} ${PYTHON_EXTRA_LIBS})
+  find_package(Python3 COMPONENTS Development.Module REQUIRED)
 endif()
 
 # Determine the location of the supplied header in the include_dirs supplied.
