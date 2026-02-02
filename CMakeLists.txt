@@ -21,7 +21,20 @@ include(vtkAddonFunctionAddExecutable)
 #
 # VTK
 #
-find_package(VTK REQUIRED)
+set(vtkAddon_VTK_COMPONENTS
+  CommonComputationalGeometry
+  FiltersModeling
+  FiltersHybrid
+  FiltersSources
+  ImagingGeneral
+  RenderingOpenGL2
+  RenderingVolumeOpenGL2
+  eigen
+)
+if(vtkAddon_WRAP_PYTHON)
+  list(APPEND vtkAddon_VTK_COMPONENTS Python)
+endif()
+find_package(VTK REQUIRED COMPONENTS ${vtkAddon_VTK_COMPONENTS})
 if(${VTK_VERSION} VERSION_LESS "8.90")
   include(${VTK_USE_FILE})
 endif()
@@ -60,34 +73,13 @@ configure_file(
   )
 
 # --------------------------------------------------------------------------
-# Install headers
-# --------------------------------------------------------------------------
-
-if(NOT DEFINED ${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT)
-  set(${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT ON)
-endif()
-
-if(NOT ${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT)
-
-  if(NOT DEFINED ${PROJECT_NAME}_INSTALL_INCLUDE_DIR)
-    set(${PROJECT_NAME}_INSTALL_INCLUDE_DIR include/${PROJECT_NAME})
-  endif()
-
-  file(GLOB headers "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
-  install(
-    FILES ${headers} ${CMAKE_CURRENT_BINARY_DIR}/${configure_header_file}
-    DESTINATION ${${PROJECT_NAME}_INSTALL_INCLUDE_DIR} COMPONENT Development)
-
-  file(GLOB headers "${CMAKE_CURRENT_SOURCE_DIR}/*.txx")
-  install(
-    FILES ${headers} ${CMAKE_CURRENT_BINARY_DIR}/${configure_header_file}
-    DESTINATION ${${PROJECT_NAME}_INSTALL_INCLUDE_DIR} COMPONENT Development)
-endif()
-
-# --------------------------------------------------------------------------
 # Sources
 # --------------------------------------------------------------------------
 set(vtkAddon_SRCS
+  vtkAddon.h
+  ${CMAKE_CURRENT_BINARY_DIR}/${configure_header_file}
+  vtkAddonExport.h
+  vtkAddonTestingMacros.h
   vtkAddonMathUtilities.cxx
   vtkAddonMathUtilities.h
   vtkAddonSetGet.h
@@ -157,14 +149,6 @@ set_source_files_properties(
   vtkLoggingMacros.h
   WRAP_EXCLUDE
   )
-# --------------------------------------------------------------------------
-# Include dirs
-# --------------------------------------------------------------------------
-set(include_dirs
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
-  )
-include_directories(BEFORE ${include_dirs})
 
 # --------------------------------------------------------------------------
 # Build library
@@ -175,6 +159,11 @@ set(srcs ${vtkAddon_SRCS})
 add_library(${lib_name} ${srcs})
 
 target_link_libraries(${lib_name} ${vtkAddon_LIBS})
+target_include_directories(${lib_name} BEFORE PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+  $<INSTALL_INTERFACE:include>
+)
 
 # --------------------------------------------------------------------------
 # Folder
@@ -207,6 +196,7 @@ if(NOT DEFINED ${PROJECT_NAME}_INSTALL_LIB_DIR)
 endif()
 
 install(TARGETS ${lib_name}
+  EXPORT vtkAddonTargets
   RUNTIME DESTINATION ${${PROJECT_NAME}_INSTALL_BIN_DIR} COMPONENT RuntimeLibraries
   LIBRARY DESTINATION ${${PROJECT_NAME}_INSTALL_LIB_DIR} COMPONENT RuntimeLibraries
   ARCHIVE DESTINATION ${${PROJECT_NAME}_INSTALL_LIB_DIR} COMPONENT Development
@@ -272,28 +262,57 @@ set(${PROJECT_NAME}_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BIN
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/vtkAddonConfig.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/vtkAddonConfig.cmake
-  )
-
-# Configuret vtkAddonConfig.cmake for an install tree
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/vtkAddonInstallConfig.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/install/vtkAddonConfig.cmake
+  @ONLY
   )
 
 # --------------------------------------------------------------------------
-# Install configuration files
+# Install development files
 # --------------------------------------------------------------------------
 
-# Set vtkAddon_INSTALL_CMAKE_DIR
-if(NOT DEFINED ${PROJECT_NAME}_INSTALL_CMAKE_DIR)
-  set(${PROJECT_NAME}_INSTALL_CMAKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
+if(NOT DEFINED ${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT)
+  set(${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT ON)
 endif()
 
-# Install vtkAddonConfig.cmake
-install(
-  FILES ${CMAKE_CURRENT_BINARY_DIR}/install/vtkAddonConfig.cmake
-  DESTINATION ${${PROJECT_NAME}_INSTALL_CMAKE_DIR}
-  )
+if(NOT DEFINED ${PROJECT_NAME}_INSTALL_INCLUDE_DIR)
+  set(${PROJECT_NAME}_INSTALL_INCLUDE_DIR "include/${PROJECT_NAME}")
+endif()
+
+if(NOT DEFINED ${PROJECT_NAME}_INSTALL_CMAKE_DIR)
+  # uses one of find_package universal prefix by default
+  set(${PROJECT_NAME}_INSTALL_CMAKE_DIR "${PROJECT_NAME}/lib/cmake/${PROJECT_NAME}")
+endif()
+
+if(NOT ${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT)
+  # Install vtkAddon headers, uses a pattern because they are not explicitly listed
+  set(vtkAddon_HEADERS ${vtkAddon_SRCS})
+  list(FILTER vtkAddon_HEADERS INCLUDE REGEX ".*\\.(h|txx)$")
+  install(
+    FILES ${vtkAddon_HEADERS}
+    DESTINATION "${${PROJECT_NAME}_INSTALL_INCLUDE_DIR}"
+    COMPONENT Development
+    )
+
+  # Configure vtkAddonInstallConfig.cmake for the install tree
+  include(CMakePackageConfigHelpers)
+  configure_package_config_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/vtkAddonInstallConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/install/vtkAddonConfig.cmake
+    INSTALL_DESTINATION "${${PROJECT_NAME}_INSTALL_CMAKE_DIR}"
+    )
+
+  install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/install/vtkAddonConfig.cmake
+    DESTINATION "${${PROJECT_NAME}_INSTALL_CMAKE_DIR}"
+    COMPONENT Development
+    )
+
+  install(
+    EXPORT vtkAddonTargets
+    FILE ${PROJECT_NAME}Targets.cmake
+    DESTINATION "${${PROJECT_NAME}_INSTALL_CMAKE_DIR}"
+    COMPONENT Development
+    )
+endif()
 
 # Install vtkAddon CMake files
 install(
@@ -305,5 +324,6 @@ install(
   ${CMAKE_SOURCE_DIR}/CMake/vtkWrapperInit.data.in
   ${CMAKE_SOURCE_DIR}/CMake/vtkWrapPython.cmake
   ${CMAKE_SOURCE_DIR}/CMake/WindowsApplicationUseUtf8.manifest
-  DESTINATION ${${PROJECT_NAME}_INSTALL_CMAKE_DIR} COMPONENT Development
+  DESTINATION "${${PROJECT_NAME}_INSTALL_CMAKE_DIR}"
+  COMPONENT Development
   )
