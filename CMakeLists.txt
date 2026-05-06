@@ -159,10 +159,15 @@ set(srcs ${vtkAddon_SRCS})
 add_library(${lib_name} ${srcs})
 
 target_link_libraries(${lib_name} ${vtkAddon_LIBS})
+
+if(NOT DEFINED ${PROJECT_NAME}_INSTALL_INCLUDE_DIR)
+  set(${PROJECT_NAME}_INSTALL_INCLUDE_DIR "include/${PROJECT_NAME}")
+endif()
+
 target_include_directories(${lib_name} BEFORE PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-  $<INSTALL_INTERFACE:include>
+  $<INSTALL_INTERFACE:${${PROJECT_NAME}_INSTALL_INCLUDE_DIR}>
 )
 
 # --------------------------------------------------------------------------
@@ -271,10 +276,6 @@ configure_file(
 
 if(NOT DEFINED ${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT)
   set(${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT ON)
-endif()
-
-if(NOT DEFINED ${PROJECT_NAME}_INSTALL_INCLUDE_DIR)
-  set(${PROJECT_NAME}_INSTALL_INCLUDE_DIR "include/${PROJECT_NAME}")
 endif()
 
 if(NOT DEFINED ${PROJECT_NAME}_INSTALL_CMAKE_DIR)
