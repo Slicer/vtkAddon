@@ -138,7 +138,31 @@ $<$<BOOL:$<TARGET_PROPERTY:${TARGET},INCLUDE_DIRECTORIES>>:
         if(NOT ${dep}_KIT STREQUAL kit_basename)
           list(APPEND _python_module_depends ${${dep}_KIT}KitPython)
         endif()
-      elseif(TARGET ${dep}Python AND NOT ${dep} MATCHES "VTK::")
+      elseif(dep MATCHES "^VTK::")
+        # Import the Python module of each VTK dependency so that base classes
+        # defined in VTK (for example vtkGridTransform in vtkFiltersHybrid) are
+        # registered before this library's wrapped subclasses are built. The
+        # eager "import vtk" used to load every VTK module up front; with lazy
+        # VTK loading it does not, so a wrapped subclass such as
+        # vtkOrientedGridTransform would otherwise be built without its VTK base
+        # class and silently lose the inherited methods. Follow VTK's own module
+        # wrapper (vtkModuleWrapPython): skip modules excluded from wrapping and
+        # name the rest "<python_package>.<library_name>".
+        _vtk_module_get_module_property("${dep}"
+          PROPERTY  "exclude_wrap"
+          VARIABLE  _dep_exclude_wrap)
+        if(NOT _dep_exclude_wrap)
+          _vtk_module_get_module_property("${dep}"
+            PROPERTY  "python_package"
+            VARIABLE  _dep_python_package)
+          _vtk_module_get_module_property("${dep}"
+            PROPERTY  "library_name"
+            VARIABLE  _dep_library_name)
+          if(_dep_python_package AND _dep_library_name)
+            list(APPEND _python_module_depends "${_dep_python_package}.${_dep_library_name}")
+          endif()
+        endif()
+      elseif(TARGET ${dep}Python)
         list(APPEND _python_module_depends ${dep}Python)
       endif()
     endforeach()
