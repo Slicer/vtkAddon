@@ -1,6 +1,16 @@
 #
 # a cmake macro to generate a text file with the class hierarchy
 #
+
+# Add a build-order dependency between two hierarchy targets if both exist.
+# Used as a deferred call (see VTK_WRAP_HIERARCHY) so the dependency can be wired
+# even when the dependee module is configured after the module that wraps it.
+function(_vtkAddon_wrap_hierarchy_add_dependency target dependency)
+  if(TARGET "${target}" AND TARGET "${dependency}")
+    add_dependencies("${target}" "${dependency}")
+  endif()
+endfunction()
+
 macro(VTK_WRAP_HIERARCHY module_name OUTPUT_DIR SOURCES)
   if(NOT VTK_WRAP_HIERARCHY_EXE)
     if(TARGET vtkWrapHierarchy)
@@ -168,5 +178,25 @@ $<$<BOOL:$<TARGET_PROPERTY:${module_name},INCLUDE_DIRECTORIES>>:
   add_custom_target(${module_name}Hierarchy
     DEPENDS
       ${CMAKE_CURRENT_BINARY_DIR}/${module_name}Hierarchy.stamp.txt)
+
+  # Wire the build-order dependency on the hierarchy targets this module wraps
+  # against. When a dependency is configured *after* this module (a forward
+  # reference in the subdirectory order), its "${dep}Hierarchy" target does not
+  # exist yet when OTHER_HIERARCHY_TARGETS is built above, so on the Makefiles
+  # generator that build-order edge is silently lost and parallel builds can
+  # race, failing with "vtkWrapHierarchy: couldn't open file ...Hierarchy.txt".
+  # Defer the wiring to the end of the top-level directory, where every module
+  # has been configured and all hierarchy targets exist, so forward and backward
+  # references are handled uniformly (this makes per-project workarounds that
+  # re-add known forward dependencies unnecessary).
+  foreach(dep ${${module_name}_WRAP_DEPENDS})
+    if(NOT "${module_name}" STREQUAL "${dep}")
+      if(NOT ${dep}_EXCLUDE_FROM_WRAPPING)
+        cmake_language(DEFER DIRECTORY "${CMAKE_SOURCE_DIR}"
+          CALL _vtkAddon_wrap_hierarchy_add_dependency
+               "${module_name}Hierarchy" "${dep}Hierarchy")
+      endif()
+    endif()
+  endforeach()
 
 endmacro()
