@@ -183,6 +183,32 @@ $<$<BOOL:$<TARGET_PROPERTY:${TARGET},INCLUDE_DIRECTORIES>>:
     @ONLY
     )
 
+  # The DEPENDS just written lists every VTK python module on the link line,
+  # because the wrapping dependencies are seeded from ${VTK_LIBRARIES}. Only the
+  # modules that own a direct base class of a wrapped class actually need to be
+  # imported first (each VTK module imports its own bases transitively). Prune
+  # the DEPENDS to that minimal set so lazy VTK loading is not defeated by
+  # importing all of VTK when this module is imported. Cross-module Slicer
+  # dependencies are preserved unchanged. Requires the merged hierarchy file and
+  # a Python interpreter; fall back to the unpruned data file when unavailable.
+  set(_init_data_file "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}Init.data")
+  if(KIT_HIERARCHY_FILE AND PYTHON_EXECUTABLE AND ${VTK_VERSION} VERSION_GREATER_EQUAL "8.90")
+    add_custom_command(
+      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}Init.pruned.data
+      DEPENDS ${vtkAddon_CMAKE_DIR}/SlicerPrunePythonModuleDepends.py
+              ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}Init.data
+              ${KIT_HIERARCHY_FILE}
+      COMMAND ${PYTHON_EXECUTABLE}
+              ${vtkAddon_CMAKE_DIR}/SlicerPrunePythonModuleDepends.py
+              ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}Init.data
+              ${KIT_HIERARCHY_FILE}
+              ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}Init.pruned.data
+      COMMENT "Pruning Python module dependencies for ${TARGET}"
+      VERBATIM
+      )
+    set(_init_data_file "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}Init.pruned.data")
+  endif()
+
   set(_init_impl_src "")
   if(${VTK_VERSION} VERSION_LESS "9.5.0")
     set(_init_impl_src "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}InitImpl.cxx")
@@ -191,9 +217,9 @@ $<$<BOOL:$<TARGET_PROPERTY:${TARGET},INCLUDE_DIRECTORIES>>:
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}Init.cxx
            ${_init_impl_src}
     DEPENDS ${VTK_WRAP_PYTHON_INIT_EXE}
-            ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}Init.data
+            ${_init_data_file}
     COMMAND ${VTK_WRAP_PYTHON_INIT_EXE}
-            ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}Init.data
+            ${_init_data_file}
             ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}Init.cxx
             ${_init_impl_src}
     COMMENT "Generating the Python module initialization sources for ${TARGET}"
