@@ -233,7 +233,18 @@ $<$<BOOL:$<TARGET_PROPERTY:${TARGET},INCLUDE_DIRECTORIES>>:
 endmacro()
 
 if(VTK_WRAP_PYTHON_FIND_LIBS)
-  find_package(Python3 COMPONENTS Development.Module REQUIRED)
+  # Development.Module leaves the Python C-API symbols undefined for the host
+  # interpreter to provide. That is fine where the linker allows undefined
+  # symbols (macOS -undefined dynamic_lookup), but on Linux the wrapped modules
+  # link with -Wl,--no-undefined and must resolve the Python symbols at link
+  # time, so the full library (Python3::Python) is required there.
+  if(VTK_UNDEFINED_SYMBOLS_ALLOWED)
+    find_package(Python3 COMPONENTS Development.Module REQUIRED)
+    set(VTK_Python3_LIBRARIES "")
+  else()
+    find_package(Python3 COMPONENTS Development REQUIRED)
+    set(VTK_Python3_LIBRARIES Python3::Python)
+  endif()
 endif()
 
 # Determine the location of the supplied header in the include_dirs supplied.
