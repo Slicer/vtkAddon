@@ -7,6 +7,7 @@ create_test_sourcelist(Tests ${KIT}CxxTests.cxx
   vtkLoggingMacrosTest1.cxx
   vtkParallelTransportTest1.cxx
   vtkPersonInformationTest1.cxx
+  vtkScatteredBSplineTransformTest1.cxx
   )
 
 set(LIBRARY_NAME ${PROJECT_NAME})
@@ -29,3 +30,4 @@ vtkaddon_add_test( vtkAddonSingletonTest1 )
 vtkaddon_add_test( vtkAddonTestingUtilitiesTest1 )
 vtkaddon_add_test( vtkLoggingMacrosTest1 )
 vtkaddon_add_test( vtkPersonInformationTest1 )
+vtkaddon_add_test( vtkScatteredBSplineTransformTest1 )
