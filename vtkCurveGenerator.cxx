@@ -774,7 +774,7 @@ int vtkCurveGenerator::GenerateLines(vtkPolyData* polyData)
       {
       vtkIdType currentNumberOfCellPoints = 0;
       const vtkIdType* currentCellPoints = nullptr;
-      lines->GetCell(0, currentNumberOfCellPoints, currentCellPoints);
+      lines->GetCellAtId(0, currentNumberOfCellPoints, currentCellPoints);
 
       if (currentNumberOfCellPoints == numberOfCellPoints)
         {
