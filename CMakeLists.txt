@@ -274,8 +274,24 @@ configure_file(
 # Install development files
 # --------------------------------------------------------------------------
 
-if(NOT DEFINED ${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT)
-  set(${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT ON)
+# Install the development files (headers, CMake package config, exported
+# targets) in addition to the runtime library. OFF by default so a plain
+# install ships only the runtime; turn ON for packaging / standalone install
+# trees. (CMP0077 is NEW at this cmake_minimum_required, so a parent project may
+# still override this before add_subdirectory().)
+option(${PROJECT_NAME}_INSTALL_DEVELOPMENT
+  "Install ${PROJECT_NAME} development files (headers, CMake package config, exported targets)" OFF)
+
+# Backward compatibility: honor the deprecated, inverted
+# ${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT if a consumer still sets it.
+if(DEFINED ${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT)
+  message(DEPRECATION
+    "${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT is deprecated; use ${PROJECT_NAME}_INSTALL_DEVELOPMENT (inverted value).")
+  if(${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT)
+    set(${PROJECT_NAME}_INSTALL_DEVELOPMENT OFF CACHE BOOL "" FORCE)
+  else()
+    set(${PROJECT_NAME}_INSTALL_DEVELOPMENT ON CACHE BOOL "" FORCE)
+  endif()
 endif()
 
 if(NOT DEFINED ${PROJECT_NAME}_INSTALL_CMAKE_DIR)
@@ -283,7 +299,7 @@ if(NOT DEFINED ${PROJECT_NAME}_INSTALL_CMAKE_DIR)
   set(${PROJECT_NAME}_INSTALL_CMAKE_DIR "${PROJECT_NAME}/lib/cmake/${PROJECT_NAME}")
 endif()
 
-if(NOT ${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT)
+if(${PROJECT_NAME}_INSTALL_DEVELOPMENT)
   # Install vtkAddon headers, uses a pattern because they are not explicitly listed
   set(vtkAddon_HEADERS ${vtkAddon_SRCS})
   list(FILTER vtkAddon_HEADERS INCLUDE REGEX ".*\\.(h|txx)$")
