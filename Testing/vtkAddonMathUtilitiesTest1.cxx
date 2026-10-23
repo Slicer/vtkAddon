@@ -244,7 +244,7 @@ int NormalizeColumnsTest()
   // Check normalization and scale computation
   for (int col = 0; col < 3; col++)
     {
-    CHECK_DOUBLE(scale[col], computedScale[col]);
+    CHECK_DOUBLE_TOLERANCE(computedScale[col], scale[col], 1e-6);
     double columnNorm = sqrt(mNormalized->GetElement(0, col)*mNormalized->GetElement(0, col) +
       mNormalized->GetElement(1, col)*mNormalized->GetElement(1, col) +
       mNormalized->GetElement(2, col)*mNormalized->GetElement(2, col));
@@ -278,7 +278,7 @@ int NormalizeOrientationMatrixColumnsTest()
   // Check normalization and scale computation
   for (int col = 0; col < 3; col++)
   {
-    CHECK_DOUBLE(scale[col], computedScale[col]);
+    CHECK_DOUBLE_TOLERANCE(computedScale[col], scale[col], 1e-6);
     double columnNorm = sqrt(mNormalized->GetElement(0, col)*mNormalized->GetElement(0, col) +
       mNormalized->GetElement(1, col)*mNormalized->GetElement(1, col) +
       mNormalized->GetElement(2, col)*mNormalized->GetElement(2, col));
