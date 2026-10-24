@@ -331,6 +331,37 @@ int vtkScatteredBSplineTransformTest1(int vtkNotUsed(argc), char* vtkNotUsed(arg
   CHECK_BOOL(boundedTransform->GetResidual() >= 0.0, true);
 
   //---------------------------------------------------------------------------
+  // The automatic fitting domain can extend beyond the points by a margin
+  std::cout << "Checking the grid bounds margin" << std::endl;
+
+  vtkNew<vtkScatteredBSplineTransform> marginTransform;
+  marginTransform->SetInputPointSet(volumetricMesh);
+  marginTransform->SetDisplacementArrayName("Displacement");
+  CHECK_DOUBLE(marginTransform->GetGridBoundsMargin(), 0.0);
+  marginTransform->Update();
+  double originWithoutMargin[3] = { 0.0, 0.0, 0.0 };
+  marginTransform->GetCoefficientData()->GetOrigin(originWithoutMargin);
+  double spacingWithoutMargin[3] = { 0.0, 0.0, 0.0 };
+  marginTransform->GetCoefficientData()->GetSpacing(spacingWithoutMargin);
+  marginTransform->SetGridBoundsMargin(20.0);
+  marginTransform->Update();
+  double originWithMargin[3] = { 0.0, 0.0, 0.0 };
+  marginTransform->GetCoefficientData()->GetOrigin(originWithMargin);
+  double meshBounds[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+  volumetricMesh->GetBounds(meshBounds);
+  // The lattice starts one control point below the domain, which starts 20 mm below the points
+  CHECK_BOOL(originWithMargin[0] < meshBounds[0] - 20.0, true);
+  CHECK_BOOL(originWithMargin[0] < originWithoutMargin[0], true);
+  CHECK_BOOL(marginTransform->GetResidual() >= 0.0, true);
+  // Copied with the transform
+  vtkNew<vtkScatteredBSplineTransform> marginCopy;
+  marginCopy->DeepCopy(marginTransform);
+  CHECK_DOUBLE(marginCopy->GetGridBoundsMargin(), 20.0);
+  // Negative margins are not allowed
+  marginTransform->SetGridBoundsMargin(-5.0);
+  CHECK_DOUBLE(marginTransform->GetGridBoundsMargin(), 0.0);
+
+  //---------------------------------------------------------------------------
   // Modifying the input mesh must trigger a new fit
   std::cout << "Checking that the transform follows changes of the input mesh" << std::endl;
 
@@ -379,10 +410,10 @@ int vtkScatteredBSplineTransformTest1(int vtkNotUsed(argc), char* vtkNotUsed(arg
   std::cout << "Checking error handling" << std::endl;
 
   {
+    // No input yet: the identity, quietly, as a transform that is being set up is not an error
     vtkNew<vtkScatteredBSplineTransform> invalidTransform;
-    TESTING_OUTPUT_ASSERT_ERRORS_BEGIN();
     invalidTransform->Update();
-    TESTING_OUTPUT_ASSERT_ERRORS_END();
+    CHECK_DOUBLE(invalidTransform->GetResidual(), -1.0);
     double point[3] = { 10.0, 20.0, 30.0 };
     double transformedPoint[3] = { 0.0, 0.0, 0.0 };
     invalidTransform->TransformPoint(point, transformedPoint);
