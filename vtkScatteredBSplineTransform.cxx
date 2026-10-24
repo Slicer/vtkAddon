@@ -398,6 +398,7 @@ vtkScatteredBSplineTransform::vtkScatteredBSplineTransform()
   this->GridBounds[4] = 0.0;
   this->GridBounds[5] = -1.0;
   this->AutomaticGridBounds = true;
+  this->GridBoundsMargin = 0.0;
 
   this->Residual = -1.0;
   this->NumberOfLevels = 0;
@@ -428,6 +429,7 @@ void vtkScatteredBSplineTransform::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "GridBounds: " << this->GridBounds[0] << " " << this->GridBounds[1] << " "
      << this->GridBounds[2] << " " << this->GridBounds[3] << " "
      << this->GridBounds[4] << " " << this->GridBounds[5] << "\n";
+  os << indent << "GridBoundsMargin: " << this->GridBoundsMargin << "\n";
   os << indent << "Residual: " << this->Residual << "\n";
   os << indent << "NumberOfLevels: " << this->NumberOfLevels << "\n";
 }
@@ -484,7 +486,7 @@ bool vtkScatteredBSplineTransform::FitCoefficients()
 
   if (!this->InputPointSet)
     {
-    vtkErrorMacro("vtkScatteredBSplineTransform: input point set is not set");
+    // Nothing to fit yet: the identity
     this->ClearCoefficients();
     return false;
     }
@@ -548,8 +550,8 @@ bool vtkScatteredBSplineTransform::FitCoefficients()
     inputPoints->GetBounds(bounds);
     for (int axis = 0; axis < 3; axis++)
       {
-      minCoordinates[axis] = bounds[2*axis];
-      maxCoordinates[axis] = bounds[2*axis+1];
+      minCoordinates[axis] = bounds[2*axis] - this->GridBoundsMargin;
+      maxCoordinates[axis] = bounds[2*axis+1] + this->GridBoundsMargin;
       }
     }
   else
@@ -801,6 +803,7 @@ void vtkScatteredBSplineTransform::InternalDeepCopy(vtkAbstractTransform *transf
   this->SetUseLinearApproximation(scatteredBSplineTransform->GetUseLinearApproximation());
   this->SetGridBounds(scatteredBSplineTransform->GetGridBounds());
   this->SetAutomaticGridBounds(scatteredBSplineTransform->GetAutomaticGridBounds());
+  this->SetGridBoundsMargin(scatteredBSplineTransform->GetGridBoundsMargin());
   this->Residual = scatteredBSplineTransform->Residual;
   this->NumberOfLevels = scatteredBSplineTransform->NumberOfLevels;
 

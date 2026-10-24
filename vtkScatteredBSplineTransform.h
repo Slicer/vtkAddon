@@ -73,6 +73,7 @@ public:
   // Set/Get the mesh (vtkPolyData, vtkUnstructuredGrid, or any other
   // vtkPointSet) whose points define the displacement samples.
   // This transform class will never modify the data.
+  // While it is not set, the transform is the identity.
   virtual void SetInputPointSet(vtkPointSet*);
   vtkGetObjectMacro(InputPointSet, vtkPointSet);
 
@@ -135,6 +136,16 @@ public:
   vtkBooleanMacro(AutomaticGridBounds, bool);
 
   // Description:
+  // Set/Get the distance that the automatic fitting domain extends beyond the
+  // bounds of the input points along each axis (in the physical units of the
+  // input points). Within this margin the transform follows the displacements
+  // smoothly; beyond it, it behaves as set by BorderMode. As the domain follows
+  // the points, so does the margin, for example along a sequence of meshes.
+  // Ignored while AutomaticGridBounds is off. Default is 0.
+  vtkSetClampMacro(GridBoundsMargin, double, 0.0, VTK_DOUBLE_MAX);
+  vtkGetMacro(GridBoundsMargin, double);
+
+  // Description:
   // Get the largest displacement error at the input points after the last fit,
   // or -1.0 if no successful fit has been performed.
   // Valid after Update().
@@ -181,6 +192,7 @@ protected:
   bool UseLinearApproximation;
   double GridBounds[6];
   bool AutomaticGridBounds;
+  double GridBoundsMargin;
 
   double Residual;
   int NumberOfLevels;
