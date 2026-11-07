@@ -5,6 +5,9 @@ create_test_sourcelist(Tests ${KIT}CxxTests.cxx
   vtkAddonSingletonTest1.cxx
   vtkAddonTestingUtilitiesTest1.cxx
   vtkLoggingMacrosTest1.cxx
+  vtkMeshDisplacementTransformTest1.cxx
+  vtkMeshDisplacementTransformTest2.cxx
+  vtkMeshDisplacementTransformTest3.cxx
   vtkParallelTransportTest1.cxx
   vtkPersonInformationTest1.cxx
   vtkScatteredBSplineTransformTest1.cxx
@@ -29,5 +32,8 @@ vtkaddon_add_test( vtkAddonMathUtilitiesTest1 )
 vtkaddon_add_test( vtkAddonSingletonTest1 )
 vtkaddon_add_test( vtkAddonTestingUtilitiesTest1 )
 vtkaddon_add_test( vtkLoggingMacrosTest1 )
+vtkaddon_add_test( vtkMeshDisplacementTransformTest1 )
+vtkaddon_add_test( vtkMeshDisplacementTransformTest2 )
+vtkaddon_add_test( vtkMeshDisplacementTransformTest3 )
 vtkaddon_add_test( vtkPersonInformationTest1 )
 vtkaddon_add_test( vtkScatteredBSplineTransformTest1 )

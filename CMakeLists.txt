@@ -94,6 +94,8 @@ set(vtkAddon_SRCS
   vtkImageLabelDilate3D.h
   vtkLinearSpline.cxx
   vtkLinearSpline.h
+  vtkMeshDisplacementTransform.cxx
+  vtkMeshDisplacementTransform.h
   vtkLoggingMacros.h
   vtkOrientedBSplineTransform.cxx
   vtkOrientedBSplineTransform.h
