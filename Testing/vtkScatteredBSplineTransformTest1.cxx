@@ -15,6 +15,12 @@
 
 ==============================================================================*/
 
+// Checks that vtkScatteredBSplineTransform fits displacements given at the
+// points of surface and volumetric meshes, both at and between the points, and
+// that it can be inverted. Also covers the fitting parameters, the border
+// falloff, that the fit is only made again when its inputs change, and invalid
+// inputs.
+
 // vtkAddon includes
 #include <vtkAddonTestingMacros.h>
 #include <vtkScatteredBSplineTransform.h>
@@ -392,6 +398,167 @@ int vtkScatteredBSplineTransformTest1(int vtkNotUsed(argc), char* vtkNotUsed(arg
   displacementArray->Modified();
   surfaceMesh->Modified();
   transform->Update();
+
+  //---------------------------------------------------------------------------
+  // Falloff: the displacement goes to zero at the falloff distance from the points
+  // (here a sphere of radius 50), following their shape, not the bounding box
+  std::cout << "Checking the border falloff" << std::endl;
+  {
+    double largestDisplacement = 0.0;
+    vtkDataArray* surfaceDisplacements = surfaceMesh->GetPointData()->GetArray("Displacement");
+    for (vtkIdType pointIndex = 0; pointIndex < surfaceDisplacements->GetNumberOfTuples(); pointIndex++)
+      {
+      largestDisplacement = std::max(largestDisplacement, vtkMath::Norm(surfaceDisplacements->GetTuple3(pointIndex)));
+      }
+    // Displacement at a position at the given distance from the sphere, along a direction
+    auto getDisplacementAt = [](vtkAbstractTransform* falloffTransform, const double direction[3], double radius)
+      {
+      double position[3] = { radius*direction[0], radius*direction[1], radius*direction[2] };
+      double transformed[3] = { 0.0, 0.0, 0.0 };
+      falloffTransform->TransformPoint(position, transformed);
+      return sqrt(vtkMath::Distance2BetweenPoints(position, transformed));
+      };
+    const double directions[4][3] = { { 1.0, 0.0, 0.0 }, { 0.0, -1.0, 0.0 }, { 0.0, 0.6, 0.8 }, { -0.48, 0.6, -0.64 } };
+
+    // Without a falloff the fit extends over the whole fitting domain
+    vtkNew<vtkScatteredBSplineTransform> noFalloffTransform;
+    noFalloffTransform->SetInputPointSet(surfaceMesh);
+    noFalloffTransform->SetDisplacementArrayName("Displacement");
+    noFalloffTransform->SetGridBoundsMargin(25.0);
+    noFalloffTransform->Update();
+    CHECK_DOUBLE(noFalloffTransform->GetBorderFalloffDistance(), 0.0);
+    CHECK_BOOL(noFalloffTransform->GetAutomaticBorderFalloffDistance(), false);
+    CHECK_DOUBLE(noFalloffTransform->GetEffectiveBorderFalloffDistance(), 0.0);
+    double largestFarDisplacementWithoutFalloff = 0.0;
+    for (const double* direction : directions)
+      {
+      largestFarDisplacementWithoutFalloff = std::max(largestFarDisplacementWithoutFalloff, getDisplacementAt(noFalloffTransform, direction, 70.0));
+      }
+
+    vtkNew<vtkScatteredBSplineTransform> falloffTransform;
+    falloffTransform->SetInputPointSet(surfaceMesh);
+    falloffTransform->SetDisplacementArrayName("Displacement");
+    falloffTransform->SetBorderFalloffDistance(15.0);
+    falloffTransform->Update();
+    CHECK_DOUBLE(falloffTransform->GetEffectiveBorderFalloffDistance(), 15.0);
+    const double errorAtPoints = GetMaximumErrorAtMeshPoints(falloffTransform, surfaceMesh, "Displacement");
+    double largestFarDisplacement = 0.0;
+    for (const double* direction : directions)
+      {
+      // 20 mm outside, and 20 mm inside the sphere (the center is 50 mm from every point)
+      largestFarDisplacement = std::max(largestFarDisplacement, getDisplacementAt(falloffTransform, direction, 70.0));
+      largestFarDisplacement = std::max(largestFarDisplacement, getDisplacementAt(falloffTransform, direction, 30.0));
+      }
+    const double origin[3] = { 0.0, 0.0, 0.0 };
+    largestFarDisplacement = std::max(largestFarDisplacement, getDisplacementAt(falloffTransform, origin, 0.0));
+    std::cout << "  largest displacement " << largestDisplacement << ", error at the points " << errorAtPoints
+              << ", 20 mm away: " << largestFarDisplacement << " (without falloff " << largestFarDisplacementWithoutFalloff << ")" << std::endl;
+    CHECK_BOOL(largestFarDisplacementWithoutFalloff > 0.2*largestDisplacement, true);
+    CHECK_BOOL(largestFarDisplacement < 0.05*largestDisplacement, true);
+    CHECK_BOOL(errorAtPoints < 0.05*largestDisplacement, true);
+
+    // Still invertible around the points, where the displacement falls
+    double largestRoundTripError = 0.0;
+    for (const double* direction : directions)
+      {
+      for (double radius = 42.0; radius <= 68.0; radius += 2.0)
+        {
+        double position[3] = { radius*direction[0], radius*direction[1], radius*direction[2] };
+        double transformed[3] = { 0.0, 0.0, 0.0 };
+        double roundTripped[3] = { 0.0, 0.0, 0.0 };
+        falloffTransform->TransformPoint(position, transformed);
+        falloffTransform->GetInverse()->TransformPoint(transformed, roundTripped);
+        largestRoundTripError = std::max(largestRoundTripError, sqrt(vtkMath::Distance2BetweenPoints(position, roundTripped)));
+        }
+      }
+    std::cout << "  largest round trip error " << largestRoundTripError << std::endl;
+    CHECK_BOOL(largestRoundTripError < 0.01, true);
+
+    // Automatic: twice the largest displacement, times the displacement scale
+    falloffTransform->AutomaticBorderFalloffDistanceOn();
+    falloffTransform->Update();
+    CHECK_DOUBLE_TOLERANCE(falloffTransform->GetEffectiveBorderFalloffDistance(), 2.0*largestDisplacement, 1e-9);
+    falloffTransform->SetDisplacementScale(-0.5);
+    falloffTransform->Update();
+    CHECK_DOUBLE_TOLERANCE(falloffTransform->GetEffectiveBorderFalloffDistance(), largestDisplacement, 1e-9);
+    CHECK_DOUBLE(falloffTransform->GetBorderFalloffDistance(), 15.0);
+
+    // Copied
+    vtkAbstractTransform* falloffCopy = falloffTransform->MakeTransform();
+    falloffCopy->DeepCopy(falloffTransform);
+    vtkScatteredBSplineTransform* falloffBSplineCopy = vtkScatteredBSplineTransform::SafeDownCast(falloffCopy);
+    CHECK_NOT_NULL(falloffBSplineCopy);
+    CHECK_DOUBLE(falloffBSplineCopy->GetBorderFalloffDistance(), 15.0);
+    CHECK_BOOL(falloffBSplineCopy->GetAutomaticBorderFalloffDistance(), true);
+    falloffCopy->Delete();
+  }
+
+  //---------------------------------------------------------------------------
+  // The fit is only made again when something it depends on changes. A fit that
+  // is made again has new coefficient data, so the coefficient data object tells
+  // whether it was.
+  std::cout << "Checking that the fit is reused" << std::endl;
+  {
+    vtkNew<vtkScatteredBSplineTransform> reusedTransform;
+    reusedTransform->SetInputPointSet(surfaceMesh);
+    reusedTransform->SetDisplacementArrayName("Displacement");
+    reusedTransform->Update();
+    vtkImageData* fittedCoefficients = reusedTransform->GetCoefficientData();
+    CHECK_NOT_NULL(fittedCoefficients);
+
+    // The inverse is a copy that is updated from this transform: it uses the same fit
+    vtkScatteredBSplineTransform* reusedInverse = vtkScatteredBSplineTransform::SafeDownCast(reusedTransform->GetInverse());
+    CHECK_NOT_NULL(reusedInverse);
+    reusedInverse->Update();
+    CHECK_POINTER(reusedInverse->GetCoefficientData(), fittedCoefficients);
+    double point[3] = { 0.0, 0.0, 50.0 };
+    double moved[3] = { 0.0, 0.0, 0.0 };
+    double movedBack[3] = { 0.0, 0.0, 0.0 };
+    reusedTransform->TransformPoint(point, moved);
+    reusedInverse->TransformPoint(moved, movedBack);
+    CHECK_DOUBLE_TOLERANCE(sqrt(vtkMath::Distance2BetweenPoints(point, movedBack)), 0.0, 1e-3);
+
+    // Modified without a change, or a different displacement scale (applied when evaluated): the same fit
+    reusedTransform->Modified();
+    reusedTransform->Update();
+    CHECK_POINTER(reusedTransform->GetCoefficientData(), fittedCoefficients);
+    double movedOnce[3] = { moved[0]-point[0], moved[1]-point[1], moved[2]-point[2] };
+    reusedTransform->SetDisplacementScale(2.0);
+    reusedTransform->Update();
+    CHECK_POINTER(reusedTransform->GetCoefficientData(), fittedCoefficients);
+    reusedTransform->TransformPoint(point, moved);
+    for (int axis = 0; axis < 3; axis++)
+      {
+      CHECK_DOUBLE_TOLERANCE(moved[axis]-point[axis], 2.0*movedOnce[axis], 1e-9);
+      }
+    reusedTransform->SetDisplacementScale(1.0);
+
+    // A copy uses the fit too, until one of its fitting parameters is changed
+    vtkAbstractTransform* reusedCopy = reusedTransform->MakeTransform();
+    reusedCopy->DeepCopy(reusedTransform);
+    vtkScatteredBSplineTransform* reusedBSplineCopy = vtkScatteredBSplineTransform::SafeDownCast(reusedCopy);
+    reusedCopy->Update();
+    CHECK_POINTER(reusedBSplineCopy->GetCoefficientData(), fittedCoefficients);
+    reusedBSplineCopy->SetTolerance(0.5*reusedBSplineCopy->GetTolerance());
+    reusedCopy->Update();
+    CHECK_BOOL(reusedBSplineCopy->GetCoefficientData() != fittedCoefficients, true);
+    reusedCopy->Delete();
+
+    // With the automatic falloff, the displacement scale sets the falloff distance: fitted again
+    reusedTransform->AutomaticBorderFalloffDistanceOn();
+    reusedTransform->Update();
+    fittedCoefficients = reusedTransform->GetCoefficientData();
+    reusedTransform->SetDisplacementScale(2.0);
+    reusedTransform->Update();
+    CHECK_BOOL(reusedTransform->GetCoefficientData() != fittedCoefficients, true);
+
+    // A changed mesh is fitted again
+    fittedCoefficients = reusedTransform->GetCoefficientData();
+    surfaceMesh->GetPointData()->GetArray("Displacement")->Modified();
+    surfaceMesh->Modified();
+    reusedTransform->Update();
+    CHECK_BOOL(reusedTransform->GetCoefficientData() != fittedCoefficients, true);
+  }
 
   //---------------------------------------------------------------------------
   // DeepCopy and MakeTransform

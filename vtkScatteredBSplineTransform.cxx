@@ -19,8 +19,11 @@
 #include "vtkPointData.h"
 #include "vtkPointSet.h"
 #include "vtkPoints.h"
+#include "vtkPolyData.h"
+#include "vtkStaticPointLocator.h"
 
 #include <cmath>
+#include <sstream>
 #include <vector>
 
 vtkStandardNewMacro(vtkScatteredBSplineTransform);
@@ -399,6 +402,9 @@ vtkScatteredBSplineTransform::vtkScatteredBSplineTransform()
   this->GridBounds[5] = -1.0;
   this->AutomaticGridBounds = true;
   this->GridBoundsMargin = 0.0;
+  this->BorderFalloffDistance = 0.0;
+  this->AutomaticBorderFalloffDistance = false;
+  this->EffectiveBorderFalloffDistance = 0.0;
 
   this->Residual = -1.0;
   this->NumberOfLevels = 0;
@@ -430,6 +436,9 @@ void vtkScatteredBSplineTransform::PrintSelf(ostream& os, vtkIndent indent)
      << this->GridBounds[2] << " " << this->GridBounds[3] << " "
      << this->GridBounds[4] << " " << this->GridBounds[5] << "\n";
   os << indent << "GridBoundsMargin: " << this->GridBoundsMargin << "\n";
+  os << indent << "BorderFalloffDistance: " << this->BorderFalloffDistance << "\n";
+  os << indent << "AutomaticBorderFalloffDistance: " << (this->AutomaticBorderFalloffDistance ? "On" : "Off") << "\n";
+  os << indent << "EffectiveBorderFalloffDistance: " << this->EffectiveBorderFalloffDistance << "\n";
   os << indent << "Residual: " << this->Residual << "\n";
   os << indent << "NumberOfLevels: " << this->NumberOfLevels << "\n";
 }
@@ -452,9 +461,46 @@ vtkMTimeType vtkScatteredBSplineTransform::GetMTime()
 }
 
 //----------------------------------------------------------------------------
+std::string vtkScatteredBSplineTransform::GetFitSignature()
+{
+  if (!this->InputPointSet)
+    {
+    return std::string();
+    }
+  std::ostringstream signature;
+  signature.precision(17);
+  signature << this->InputPointSet << " " << this->InputPointSet->GetMTime() << " "
+    << (this->DisplacementArrayName ? this->DisplacementArrayName : "") << "|";
+  for (int axis = 0; axis < 3; axis++)
+    {
+    signature << this->ControlPointSpacing[axis] << " ";
+    }
+  for (int index = 0; index < 6; index++)
+    {
+    signature << this->GridBounds[index] << " ";
+    }
+  signature << this->MinimumControlPointSpacing << " " << this->MaximumNumberOfLevels << " "
+    << this->Tolerance << " " << this->UseLinearApproximation << " " << this->AutomaticGridBounds << " "
+    << this->GridBoundsMargin << " " << this->BorderFalloffDistance << " " << this->AutomaticBorderFalloffDistance;
+  // The displacement scale is applied when the transform is evaluated, so it only
+  // changes the fit through the automatic falloff distance
+  if (this->AutomaticBorderFalloffDistance)
+    {
+    signature << " " << std::abs(this->DisplacementScale);
+    }
+  return signature.str();
+}
+
+//----------------------------------------------------------------------------
 void vtkScatteredBSplineTransform::InternalUpdate()
 {
-  this->FitCoefficients();
+  // Fit only if something that the fit depends on has changed since the fit in use,
+  // which may have been made by the transform that this one is a copy of
+  const std::string signature = this->GetFitSignature();
+  if (signature.empty() || signature != this->FittedSignature || !this->GetCoefficientData())
+    {
+    this->FittedSignature = (this->FitCoefficients() ? signature : std::string());
+    }
   // The parent class picks up the fitted coefficients that FitCoefficients()
   // has installed as the coefficient data.
   this->Superclass::InternalUpdate();
@@ -483,6 +529,7 @@ bool vtkScatteredBSplineTransform::FitCoefficients()
 {
   this->Residual = -1.0;
   this->NumberOfLevels = 0;
+  this->EffectiveBorderFalloffDistance = 0.0;
 
   if (!this->InputPointSet)
     {
@@ -541,6 +588,24 @@ bool vtkScatteredBSplineTransform::FitCoefficients()
     return false;
     }
 
+  // The distance from the points over which the displacement falls to zero
+  if (this->AutomaticBorderFalloffDistance)
+    {
+    double largestDisplacement2 = 0.0;
+    for (vtkIdType pointIndex = 0; pointIndex < numberOfInputPoints; pointIndex++)
+      {
+      double vector[3] = { 0.0, 0.0, 0.0 };
+      displacementArray->GetTuple(pointIndex, vector);
+      largestDisplacement2 = std::max(largestDisplacement2, vtkMath::Dot(vector, vector));
+      }
+    this->EffectiveBorderFalloffDistance = 2.0*std::abs(this->DisplacementScale)*std::sqrt(largestDisplacement2);
+    }
+  else
+    {
+    this->EffectiveBorderFalloffDistance = this->BorderFalloffDistance;
+    }
+  const double borderFalloffDistance = this->EffectiveBorderFalloffDistance;
+
   // Determine the fitting domain
   double minCoordinates[3] = { 0.0, 0.0, 0.0 };
   double maxCoordinates[3] = { 0.0, 0.0, 0.0 };
@@ -548,10 +613,12 @@ bool vtkScatteredBSplineTransform::FitCoefficients()
     {
     double bounds[6] = { 0.0, -1.0, 0.0, -1.0, 0.0, -1.0 };
     inputPoints->GetBounds(bounds);
+    // With a falloff the domain holds a band of zero displacements beyond the falloff distance
+    const double margin = std::max(this->GridBoundsMargin, 1.25*borderFalloffDistance);
     for (int axis = 0; axis < 3; axis++)
       {
-      minCoordinates[axis] = bounds[2*axis] - this->GridBoundsMargin;
-      maxCoordinates[axis] = bounds[2*axis+1] + this->GridBoundsMargin;
+      minCoordinates[axis] = bounds[2*axis] - margin;
+      maxCoordinates[axis] = bounds[2*axis+1] + margin;
       }
     }
   else
@@ -665,6 +732,67 @@ bool vtkScatteredBSplineTransform::FitCoefficients()
     this->ClearCoefficients();
     return false;
     }
+  // The residual is reported, and refinement is stopped, at the input points only
+  const size_t numberOfInputValues = displacements.size();
+
+  // Zero displacements wherever no input point is within the falloff distance
+  if (borderFalloffDistance > 0.0)
+    {
+    vtkNew<vtkPolyData> pointCloud;
+    pointCloud->SetPoints(inputPoints);
+    vtkNew<vtkStaticPointLocator> pointLocator;
+    pointLocator->SetDataSet(pointCloud);
+    pointLocator->BuildLocator();
+    // A quarter of the falloff distance apart, but not so many that the fit would be slow
+    double sampleSpacing = 0.25*borderFalloffDistance;
+    const double maximumNumberOfSamples = 1e6;
+    auto numberOfSamplesAt = [&](double spacing)
+      {
+      double count = 1.0;
+      for (int axis = 0; axis < 3; axis++)
+        {
+        count *= 1.0+std::floor((maxCoordinates[axis]-minCoordinates[axis])/spacing);
+        }
+      return count;
+      };
+    while (numberOfSamplesAt(sampleSpacing) > maximumNumberOfSamples)
+      {
+      sampleSpacing *= 1.25;
+      }
+    int sampleCounts[3] = { 0, 0, 0 };
+    for (int axis = 0; axis < 3; axis++)
+      {
+      sampleCounts[axis] = 1+static_cast<int>(std::floor((maxCoordinates[axis]-minCoordinates[axis])/sampleSpacing));
+      }
+    const double zero[3] = { 0.0, 0.0, 0.0 };
+    for (int k = 0; k < sampleCounts[2]; k++)
+      {
+      for (int j = 0; j < sampleCounts[1]; j++)
+        {
+        for (int i = 0; i < sampleCounts[0]; i++)
+          {
+          const double sample[3] = { minCoordinates[0]+i*sampleSpacing, minCoordinates[1]+j*sampleSpacing,
+                                     minCoordinates[2]+k*sampleSpacing };
+          double distance2 = 0.0;
+          if (pointLocator->FindClosestPointWithinRadius(borderFalloffDistance, sample, distance2) < 0)
+            {
+            points.insert(points.end(), sample, sample+3);
+            displacements.insert(displacements.end(), zero, zero+3);
+            }
+          }
+        }
+      }
+    }
+  // Largest error at the input points, among the residuals of all the samples
+  auto inputResidual = [&](const std::vector<double>& allResiduals)
+    {
+    double largest = 0.0;
+    for (size_t valueIndex = 0; valueIndex < numberOfInputValues; valueIndex += 3)
+      {
+      largest = std::max(largest, vtkMath::Norm(&allResiduals[valueIndex]));
+      }
+    return largest;
+    };
 
   // Coarsest level
   vtkScatteredBSplineLattice lattice;
@@ -714,7 +842,8 @@ bool vtkScatteredBSplineTransform::FitCoefficients()
     {
     vtkScatteredBSplineFitLevel(points, displacements, lattice);
     }
-  double residual = vtkScatteredBSplineComputeResiduals(lattice, points, displacements, residuals);
+  vtkScatteredBSplineComputeResiduals(lattice, points, displacements, residuals);
+  double residual = inputResidual(residuals);
   int numberOfLevels = 1;
 
   // Refinement levels
@@ -768,7 +897,8 @@ bool vtkScatteredBSplineTransform::FitCoefficients()
       nodeCounts[axis] = refinedNodeCounts[axis];
       }
 
-    residual = vtkScatteredBSplineComputeResiduals(lattice, points, displacements, residuals);
+    vtkScatteredBSplineComputeResiduals(lattice, points, displacements, residuals);
+    residual = inputResidual(residuals);
     numberOfLevels++;
     }
 
@@ -804,8 +934,13 @@ void vtkScatteredBSplineTransform::InternalDeepCopy(vtkAbstractTransform *transf
   this->SetGridBounds(scatteredBSplineTransform->GetGridBounds());
   this->SetAutomaticGridBounds(scatteredBSplineTransform->GetAutomaticGridBounds());
   this->SetGridBoundsMargin(scatteredBSplineTransform->GetGridBoundsMargin());
+  this->SetBorderFalloffDistance(scatteredBSplineTransform->GetBorderFalloffDistance());
+  this->SetAutomaticBorderFalloffDistance(scatteredBSplineTransform->GetAutomaticBorderFalloffDistance());
+  this->EffectiveBorderFalloffDistance = scatteredBSplineTransform->EffectiveBorderFalloffDistance;
   this->Residual = scatteredBSplineTransform->Residual;
   this->NumberOfLevels = scatteredBSplineTransform->NumberOfLevels;
+  // The parent class shares the fitted coefficients, so this copy uses the same fit
+  this->FittedSignature = scatteredBSplineTransform->FittedSignature;
 
   this->Superclass::InternalDeepCopy(transform);
 }
