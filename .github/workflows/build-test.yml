@@ -1,0 +1,128 @@
+name: "Build and Test"
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # Increment to rebuild VTK, for example after changing the VTK build options below.
+  VTK_CACHE_VERSION: 1
+
+jobs:
+  build-test:
+    name: ${{ matrix.os }}, VTK ${{ matrix.vtk.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        vtk:
+          # VTK used by Slicer. To update: in https://github.com/Slicer/Slicer/blob/main/SuperBuild/External_VTK.cmake
+          # take the repository from Slicer_VTK_GIT_REPOSITORY and the hash from the _git_tag of the default VTK
+          # version (_default_vtk_major_version and _default_vtk_minor_version in Slicer's top-level CMakeLists.txt).
+          - name: "Slicer (9.6.2)"
+            repository: https://github.com/Slicer/VTK.git
+            hash: 167845c5b6057c5be27ab200c82eca87d2e44c1c # slicer-v9.6.2-2026-05-15-f49a1dbaf
+          # Latest VTK release. To update: take the newest vX.Y.Z tag (not a release candidate) from
+          # https://github.com/Kitware/VTK/tags, or list them with
+          #   git ls-remote --tags --refs https://github.com/Kitware/VTK.git "v*"
+          - name: "latest (9.7.2)"
+            repository: https://github.com/Kitware/VTK.git
+            hash: 695092e25b8aff988ae0f116f03284923f24bb33 # v9.7.2
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Set number of parallel build jobs
+        # Without a number, "cmake --build --parallel" runs make with an unlimited number of jobs,
+        # which runs out of memory when building VTK
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then jobs=$(nproc)
+          elif [ "$RUNNER_OS" == "macOS" ]; then jobs=$(sysctl -n hw.ncpu)
+          else jobs=$NUMBER_OF_PROCESSORS; fi
+          echo "CMAKE_BUILD_PARALLEL_LEVEL=$jobs" >> "$GITHUB_ENV"
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: vtkAddon
+
+      - name: Restore VTK
+        id: restore-vtk
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: vtk-install
+          key: vtk-${{ runner.os }}-${{ runner.arch }}-${{ matrix.vtk.hash }}-${{ env.VTK_CACHE_VERSION }}
+
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux' && steps.restore-vtk.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl-dev libx11-dev libxcursor-dev libxt-dev
+
+      - name: Build VTK
+        if: steps.restore-vtk.outputs.cache-hit != 'true'
+        run: |
+          git init -q vtk
+          git -C vtk fetch -q --depth 1 "${{ matrix.vtk.repository }}" "${{ matrix.vtk.hash }}"
+          git -C vtk checkout -q FETCH_HEAD
+          # Only the modules that vtkAddon uses (vtkAddon_VTK_COMPONENTS in CMakeLists.txt) and their dependencies
+          cmake -S vtk -B vtk-build \
+            -DCMAKE_BUILD_TYPE:STRING=Release \
+            -DCMAKE_INSTALL_PREFIX:PATH="$GITHUB_WORKSPACE/vtk-install" \
+            -DBUILD_SHARED_LIBS:BOOL=ON \
+            -DVTK_BUILD_TESTING:STRING=OFF \
+            -DVTK_BUILD_EXAMPLES:BOOL=OFF \
+            -DVTK_WRAP_PYTHON:BOOL=OFF \
+            -DVTK_GROUP_ENABLE_Imaging:STRING=DONT_WANT \
+            -DVTK_GROUP_ENABLE_MPI:STRING=DONT_WANT \
+            -DVTK_GROUP_ENABLE_Qt:STRING=DONT_WANT \
+            -DVTK_GROUP_ENABLE_Rendering:STRING=DONT_WANT \
+            -DVTK_GROUP_ENABLE_StandAlone:STRING=DONT_WANT \
+            -DVTK_GROUP_ENABLE_Views:STRING=DONT_WANT \
+            -DVTK_GROUP_ENABLE_Web:STRING=DONT_WANT \
+            -DVTK_MODULE_ENABLE_VTK_CommonComputationalGeometry:STRING=YES \
+            -DVTK_MODULE_ENABLE_VTK_FiltersModeling:STRING=YES \
+            -DVTK_MODULE_ENABLE_VTK_FiltersHybrid:STRING=YES \
+            -DVTK_MODULE_ENABLE_VTK_FiltersSources:STRING=YES \
+            -DVTK_MODULE_ENABLE_VTK_ImagingGeneral:STRING=YES \
+            -DVTK_MODULE_ENABLE_VTK_RenderingOpenGL2:STRING=YES \
+            -DVTK_MODULE_ENABLE_VTK_RenderingVolumeOpenGL2:STRING=YES \
+            -DVTK_MODULE_ENABLE_VTK_eigen:STRING=YES
+          cmake --build vtk-build --config Release
+          cmake --install vtk-build --config Release
+
+      - name: Save VTK
+        if: steps.restore-vtk.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: vtk-install
+          key: ${{ steps.restore-vtk.outputs.cache-primary-key }}
+
+      - name: Configure
+        run: |
+          cmake -S vtkAddon -B build \
+            -DCMAKE_BUILD_TYPE:STRING=Release \
+            -DCMAKE_PREFIX_PATH:PATH="$GITHUB_WORKSPACE/vtk-install" \
+            -DCMAKE_RUNTIME_OUTPUT_DIRECTORY:PATH="$GITHUB_WORKSPACE/build/bin" \
+            -DBUILD_TESTING:BOOL=ON
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Add VTK to PATH
+        # Let the tests find the VTK DLLs on Windows
+        if: runner.os == 'Windows'
+        run: echo "$GITHUB_WORKSPACE\\vtk-install\\bin" >> "$GITHUB_PATH"
+
+      - name: Test
+        run: ctest --test-dir build --build-config Release --output-on-failure
