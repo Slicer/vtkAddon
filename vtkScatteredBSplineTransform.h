@@ -47,6 +47,8 @@
 
 #include "vtkOrientedBSplineTransform.h"
 
+#include <string>
+
 class vtkPointSet;
 
 class VTK_ADDON_EXPORT vtkScatteredBSplineTransform : public vtkOrientedBSplineTransform
@@ -146,6 +148,35 @@ public:
   vtkGetMacro(GridBoundsMargin, double);
 
   // Description:
+  // Set/Get the distance from the input points over which the displacement falls
+  // smoothly to zero. Default is 0: the transform follows the displacements over the
+  // whole fitting domain, and beyond it behaves as set by BorderMode. If it is
+  // positive, the fit also gets zero displacements on a regular grid of samples (a
+  // quarter of the distance apart) wherever no input point is closer than this
+  // distance, and the automatic fitting domain extends at least 1.25 times this
+  // distance beyond the points, so that the displacement goes to zero following the
+  // shape of the points, not their bounding box. The transform remains a B-spline
+  // (it can be saved as one); how it falls to zero between the points and this
+  // distance is decided by the fit. As for vtkMeshDisplacementTransform, the
+  // transform remains invertible if the distance is larger than about 1.5 times the
+  // largest displacement.
+  vtkSetClampMacro(BorderFalloffDistance, double, 0.0, VTK_DOUBLE_MAX);
+  vtkGetMacro(BorderFalloffDistance, double);
+
+  // Description:
+  // If on, BorderFalloffDistance is ignored and the border falloff distance is twice
+  // the largest displacement (|DisplacementScale| times the longest vector of the
+  // array), as in vtkMeshDisplacementTransform. Default is off.
+  vtkSetMacro(AutomaticBorderFalloffDistance, bool);
+  vtkGetMacro(AutomaticBorderFalloffDistance, bool);
+  vtkBooleanMacro(AutomaticBorderFalloffDistance, bool);
+
+  // Description:
+  // The border falloff distance used by the last fit: computed from the displacements
+  // if AutomaticBorderFalloffDistance is on, BorderFalloffDistance otherwise.
+  vtkGetMacro(EffectiveBorderFalloffDistance, double);
+
+  // Description:
   // Get the largest displacement error at the input points after the last fit,
   // or -1.0 if no successful fit has been performed.
   // Valid after Update().
@@ -163,8 +194,15 @@ protected:
 
   // Description:
   // Fit the b-spline coefficients to the input point set, then let the parent
-  // class set up the transformation from the fitted coefficients.
+  // class set up the transformation from the fitted coefficients. The fit is
+  // only made again if its inputs have changed (see GetFitSignature()).
   void InternalUpdate() override;
+
+  // Description:
+  // Everything that the fit depends on: the input point set and when it was
+  // modified, the displacement array name, the fitting parameters, and the
+  // displacement scale if it sets the falloff distance. Empty without input.
+  std::string GetFitSignature();
 
   // Description:
   // Copy this transform from another of the same type.
@@ -193,9 +231,17 @@ protected:
   double GridBounds[6];
   bool AutomaticGridBounds;
   double GridBoundsMargin;
+  double BorderFalloffDistance;
+  bool AutomaticBorderFalloffDistance;
 
+  double EffectiveBorderFalloffDistance;
   double Residual;
   int NumberOfLevels;
+
+  // Fit signature of the coefficients in use (empty if they are not a successful fit).
+  // DeepCopy() copies it with the coefficients, so that a copy, such as the inverse
+  // of this transform, uses the fit instead of fitting again.
+  std::string FittedSignature;
 };
 
 #endif
