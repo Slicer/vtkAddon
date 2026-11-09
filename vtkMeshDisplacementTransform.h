@@ -105,6 +105,14 @@ public:
   ///@}
 
   ///@{
+  /// Identifies where the input point set comes from (for example, the model whose mesh it is), so that the input can
+  /// be found again for a copy of this transform or after it is read from file. It is not used by this class, only
+  /// copied with the transform.
+  vtkSetStringMacro(InputPointSetSourceKey);
+  vtkGetStringMacro(InputPointSetSourceKey);
+  ///@}
+
+  ///@{
   /// Multiplies the displacements. Default is 1.
   vtkSetMacro(DisplacementScale, double);
   vtkGetMacro(DisplacementScale, double);
@@ -190,6 +198,7 @@ protected:
 
   vtkPointSet* InputPointSet{ nullptr };
   char* DisplacementArrayName{ nullptr };
+  char* InputPointSetSourceKey{ nullptr };
   double DisplacementScale{ 1.0 };
   double BorderFalloffDistance{ 0.0 };
   bool AutomaticBorderFalloffDistance{ false };

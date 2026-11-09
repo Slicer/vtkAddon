@@ -385,6 +385,7 @@ vtkScatteredBSplineTransform::vtkScatteredBSplineTransform()
 {
   this->InputPointSet = nullptr;
   this->DisplacementArrayName = nullptr;
+  this->InputPointSetSourceKey = nullptr;
 
   this->ControlPointSpacing[0] = 0.0;
   this->ControlPointSpacing[1] = 0.0;
@@ -415,6 +416,7 @@ vtkScatteredBSplineTransform::~vtkScatteredBSplineTransform()
 {
   this->SetInputPointSet(nullptr);
   this->SetDisplacementArrayName(nullptr);
+  this->SetInputPointSetSourceKey(nullptr);
 }
 
 //----------------------------------------------------------------------------
@@ -425,6 +427,7 @@ void vtkScatteredBSplineTransform::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "InputPointSet: " << this->InputPointSet << "\n";
   os << indent << "DisplacementArrayName: "
      << (this->DisplacementArrayName ? this->DisplacementArrayName : "(none)") << "\n";
+  os << indent << "InputPointSetSourceKey: " << (this->InputPointSetSourceKey ? this->InputPointSetSourceKey : "(none)") << "\n";
   os << indent << "ControlPointSpacing: " << this->ControlPointSpacing[0] << " "
      << this->ControlPointSpacing[1] << " " << this->ControlPointSpacing[2] << "\n";
   os << indent << "MinimumControlPointSpacing: " << this->MinimumControlPointSpacing << "\n";
@@ -926,6 +929,7 @@ void vtkScatteredBSplineTransform::InternalDeepCopy(vtkAbstractTransform *transf
   // share it instead of copying it
   this->SetInputPointSet(scatteredBSplineTransform->GetInputPointSet());
   this->SetDisplacementArrayName(scatteredBSplineTransform->GetDisplacementArrayName());
+  this->SetInputPointSetSourceKey(scatteredBSplineTransform->GetInputPointSetSourceKey());
   this->SetControlPointSpacing(scatteredBSplineTransform->GetControlPointSpacing());
   this->SetMinimumControlPointSpacing(scatteredBSplineTransform->GetMinimumControlPointSpacing());
   this->SetMaximumNumberOfLevels(scatteredBSplineTransform->GetMaximumNumberOfLevels());

@@ -53,6 +53,7 @@ vtkMeshDisplacementTransform::~vtkMeshDisplacementTransform()
 {
   this->SetInputPointSet(nullptr);
   this->SetDisplacementArrayName(nullptr);
+  this->SetInputPointSetSourceKey(nullptr);
 }
 
 //----------------------------------------------------------------------------
@@ -61,6 +62,7 @@ void vtkMeshDisplacementTransform::PrintSelf(ostream& os, vtkIndent indent)
   this->Superclass::PrintSelf(os, indent);
   os << indent << "InputPointSet: " << this->InputPointSet << "\n";
   os << indent << "DisplacementArrayName: " << (this->DisplacementArrayName ? this->DisplacementArrayName : "(active vectors)") << "\n";
+  os << indent << "InputPointSetSourceKey: " << (this->InputPointSetSourceKey ? this->InputPointSetSourceKey : "(none)") << "\n";
   os << indent << "DisplacementScale: " << this->DisplacementScale << "\n";
   os << indent << "BorderFalloffDistance: " << this->BorderFalloffDistance << "\n";
   os << indent << "AutomaticBorderFalloffDistance: " << (this->AutomaticBorderFalloffDistance ? "On" : "Off") << "\n";
@@ -100,6 +102,7 @@ void vtkMeshDisplacementTransform::InternalDeepCopy(vtkAbstractTransform* transf
   // The mesh is never modified by this class, so it is shared
   this->SetInputPointSet(meshTransform->GetInputPointSet());
   this->SetDisplacementArrayName(meshTransform->GetDisplacementArrayName());
+  this->SetInputPointSetSourceKey(meshTransform->GetInputPointSetSourceKey());
   this->SetDisplacementScale(meshTransform->GetDisplacementScale());
   this->SetBorderFalloffDistance(meshTransform->GetBorderFalloffDistance());
   this->SetAutomaticBorderFalloffDistance(meshTransform->GetAutomaticBorderFalloffDistance());
