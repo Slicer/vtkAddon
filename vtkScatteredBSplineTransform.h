@@ -87,6 +87,14 @@ public:
   vtkGetStringMacro(DisplacementArrayName);
 
   // Description:
+  // Identifies where the input point set comes from (for example, the model
+  // whose mesh it is), so that the input can be found again for a copy of
+  // this transform or after it is read from file. It is not used by this
+  // class, only copied with the transform.
+  vtkSetStringMacro(InputPointSetSourceKey);
+  vtkGetStringMacro(InputPointSetSourceKey);
+
+  // Description:
   // Set/Get the control point spacing of the coarsest (first) level, in the
   // coordinate system of the input points.
   // If an axis is set to 0 (default) then one tenth of the size of the fitting
@@ -222,6 +230,7 @@ protected:
 
   vtkPointSet* InputPointSet;
   char* DisplacementArrayName;
+  char* InputPointSetSourceKey;
 
   double ControlPointSpacing[3];
   double MinimumControlPointSpacing;
