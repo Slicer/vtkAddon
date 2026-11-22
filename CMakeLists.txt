@@ -94,8 +94,6 @@ set(vtkAddon_SRCS
   vtkImageLabelDilate3D.h
   vtkLinearSpline.cxx
   vtkLinearSpline.h
-  vtkMeshDisplacementTransform.cxx
-  vtkMeshDisplacementTransform.h
   vtkLoggingMacros.h
   vtkOrientedBSplineTransform.cxx
   vtkOrientedBSplineTransform.h
@@ -109,8 +107,6 @@ set(vtkAddon_SRCS
   vtkPersonInformation.h
   vtkRawRGBVolumeCodec.cxx
   vtkRawRGBVolumeCodec.h
-  vtkScatteredBSplineTransform.cxx
-  vtkScatteredBSplineTransform.h
   vtkSingleton.h
   vtkSlicerDijkstraGraphGeodesicPath.cxx
   vtkSlicerDijkstraGraphGeodesicPath.h
